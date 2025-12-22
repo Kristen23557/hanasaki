@@ -1,20 +1,42 @@
 [
-  { "group": "Developers",
+  {
+    "type": "Developers",
     "members": [
-      { "name": "KArabella" },
-      { "name": "Another Contributor" }
+      { "name": "KArabella", "avatar": "karabella.jpg" },
+      { "name": "Hanasaki iyaki", "avatar": "Avatar_Hanasaki.jpg" }
     ]
   },
-  { "group": "supporters",
-    "members": [
-      { "name": "Supporter1" },
-      { "name": "Supporter2" }
+  {
+    "type": "supporters",
+    "groups": [
+      {
+        "name": "test Supporters",
+        "group_id": "123456789",
+        "members": [
+          { "name": "Supporter1", "avatar": "support1.png" },
+          { "name": "Supporter2", "avatar": "support2.png" }
+        ]
+      },
+            {
+        "name": "test Supporters2",
+        "group_id": "987654321",
+        "members": [
+          { "name": "Supporter1", "avatar": "" },
+          { "name": "Supporter2", "avatar": "" }
+        ]
+      }
+    ],
+    "private_users": [
+      { "name": "PrivateUser1", "avatar": "" },
+      { "name": "PrivateUser2", "avatar": "" }
     ]
   },
-  { "group":"sponsers",
+  {
+    "type": "sponsors",
+    "name": "赞助者",
     "members": [
-      { "name": "Sponsor1" },
-      { "name": "Sponsor2" }
+      { "name": "Sponsor1", "avatar": "sponsor1.png" },
+      { "name": "Sponsor2", "avatar": "sponsor2.png" }
     ]
   }
 ]

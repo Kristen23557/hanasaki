@@ -1,0 +1,308 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>感谢名单 - 花咲一秋</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        /* 引入本地 SJ-Narrow 字体：Light 与 Regular */
+        @font-face{
+            font-family: 'SJ-Narrow';
+            src: url('fonts/SJ-Narrow-Regular-2.ttf') format('truetype');
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face{
+            font-family: 'SJ-Narrow';
+            src: url('fonts/SJ-Narrow-Light-2.ttf') format('truetype');
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+        }
+        /* 暗色主题覆盖（Thanks 页面） */
+        [data-theme="dark"]{
+            --primary-blue: #5a86b8;
+            --accent-pink: #ff85a8;
+            --mint: #27b16b;
+            --gold: #f0c24a;
+            --bg: linear-gradient(180deg,#07101a 0%, #04111a 100%);
+            --card-bg: rgba(10,14,20,0.75);
+            --muted: #9fb0c8;
+            --text-dark: #eaf3ff;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
+            --shadow-strong: 0 30px 70px rgba(0,0,0,0.7);
+        }
+        :root{
+            --primary-blue: #6a93c9;
+            --accent-pink: #ff7aa2;
+            --mint: #2ecc71;
+            --gold: #ffcc00;
+            --bg: linear-gradient(180deg, #f6f8fb 0%, #eef3f9 100%);
+            --card-bg: rgba(255,255,255,0.98);
+            --muted: #6b7280;
+            --text-dark: #0f1724;
+            --glass: rgba(255,255,255,0.6);
+            --shadow-soft: 0 8px 30px rgba(15,23,36,0.06);
+            --shadow-strong: 0 20px 50px rgba(15,23,36,0.12);
+            --radius: 14px;
+            --transition: 300ms cubic-bezier(.2,.9,.2,1);
+        }
+        html,body{height:100%;}
+        body{margin:0;padding:0;font-family:'Poppins', 'Noto Sans SC', sans-serif;background:var(--bg);color:var(--text-dark);-webkit-font-smoothing:antialiased}
+
+        .content-wrapper{max-width:1180px;margin:28px auto;padding:22px}
+
+        /* 顶部导航 */
+        .top-nav{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;background:var(--card-bg);border-radius:12px;box-shadow:var(--shadow-soft);margin-bottom:20px}
+        .top-nav a{color:var(--muted);text-decoration:none;font-weight:600;margin-left:14px}
+        .top-nav a:hover{color:var(--primary-blue)}
+        .nav-toggle{background:transparent;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;color:var(--muted);font-size:18px}
+        .nav-toggle:hover{background:rgba(255,255,255,0.03);color:var(--text-dark);transform:translateY(-2px)}
+
+        header{display:flex;align-items:center;justify-content:space-between;gap:16px}
+        header h1{font-size:1.6rem;margin:0;color:var(--text-dark)}
+        .note{color:var(--muted);font-size:0.95rem}
+
+        .section-title{display:flex;align-items:center;gap:12px;margin:22px 0 12px;font-size:1.2rem;color:var(--text-dark)}
+        .section-title i{color:var(--accent-pink);background:linear-gradient(90deg,#fff8fb, #fff);width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-soft)}
+
+        /* 布局：每行仅一个卡片（全宽），卡片内部成员以行内网格展示 */
+        .features-grid{display:grid;grid-template-columns:1fr;gap:24px;margin-top:18px}
+
+        .feature-card{background:var(--card-bg);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-soft);transition:transform var(--transition),box-shadow var(--transition);position:relative;overflow:hidden;opacity:0;transform:translateY(12px);animation:cardIn 420ms cubic-bezier(.2,.9,.2,1) forwards;animation-delay:var(--i,0ms)}
+        .feature-card::after{content:'';position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:0}
+        .feature-card:hover{transform:translateY(-10px) scale(1.01);box-shadow:var(--shadow-strong)}
+
+        @keyframes cardIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+        /* role accents */
+        .feature-card.supporter{border-top:6px solid var(--primary-blue)}
+        .feature-card.developer{border-top:6px solid var(--mint)}
+        .feature-card.sponsor{border-top:6px solid var(--gold)}
+
+        .feature-card .icon{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:22px}
+        .feature-card .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+        /* 使用 SJ-Narrow（若可用）作为标题字体 */
+        .feature-card h4{font-family:'SJ-Narrow', 'Poppins', 'Noto Sans SC', sans-serif;font-size:1.45rem;color:var(--text-dark);margin:0 0 12px;font-weight:700}
+        .feature-card .group-sub{color:var(--muted);font-size:0.95rem}
+
+        .group-badge{background:rgba(0,0,0,0.06);color:var(--muted);padding:6px 8px;border-radius:10px;font-size:0.85rem}
+
+        /* 成员显示为行内网格，可多列显示 */
+        .members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:12px}
+        .member-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(0,0,0,0.02);border-radius:10px}
+        .member-name{font-family:'SJ-Narrow','Poppins',sans-serif;font-size:1.12rem;color:var(--text-dark);font-weight:700}
+        .member-card{transition:transform 260ms cubic-bezier(.2,.9,.2,1),box-shadow 260ms}
+        .member-card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(15,23,36,0.06)}
+        .avatar{width:56px;height:56px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff,#f3f6fb);color:var(--primary-blue);font-weight:700;font-size:1rem}
+        .avatar-img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid rgba(0,0,0,0.04)}
+        .avatar-wrap{width:56px;height:56px;display:inline-flex;align-items:center;justify-content:center}
+        .member-role{font-size:0.9rem;color:var(--muted)}
+
+        /* private users card styling */
+        .feature-card.private{background:linear-gradient(90deg, rgba(255,255,255,0.98), rgba(250,246,255,0.98))}
+
+        @media(max-width:720px){.features-grid{grid-template-columns:1fr}}
+        @media(max-width:420px){.features-grid{grid-template-columns:1fr;padding:0}}
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <nav class="top-nav">
+            <div><a href="index.html"> 返回首页</a></div>
+            <div>
+                <a href="Documents.html">帮助手册</a>
+                <a href="Thanks.html">感谢名单</a>
+                <button id="theme-toggle" class="nav-toggle" aria-label="切换主题"><i class="fas fa-moon"></i></button>
+            </div>
+        </nav>
+
+        <header>
+            <h1>感谢名单</h1>
+            <p class="note">以下按类型分区，支持者按组别展示为卡片形式，感谢每一位的支持！</p>
+        </header>
+
+        <main id="thanks-container">
+            <p class="note">正在加载名单</p>
+        </main>
+    </div>
+
+    <script>
+        // 小工具：防止注入
+        function escapeHtml(str){
+            return String(str).replace(/[&<>\"']/g, function(m){
+                return ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":"&#39;"})[m];
+            });
+        }
+
+        function buildGroupCard(name,members,opts={}){
+            // opts: { role: 'supporter'|'developer'|'sponsor', groupId: string, isPrivate: boolean }
+            const card = document.createElement('div');
+            const role = opts.role || '';
+            card.className = 'feature-card ' + (opts.isPrivate ? 'private ' : '') + (role ? role : '');
+            // 支持基于 opts.delay 设置入场延迟（例如 '120ms'）
+            if(opts && opts.delay){ card.style.setProperty('--i', opts.delay); }
+
+            // icon block
+            const iconWrap = document.createElement('div'); iconWrap.className='icon';
+            const ico = document.createElement('i');
+            if(opts.isPrivate){ ico.className='fas fa-user'; }
+            else if(role==='developer'){ ico.className='fas fa-code-branch'; }
+            else if(role==='sponsor'){ ico.className='fas fa-hand-holding-dollar'; }
+            else { ico.className='fas fa-user-friends'; }
+            iconWrap.appendChild(ico);
+
+            // title row
+            const titleRow = document.createElement('div'); titleRow.className='title-row';
+            const title = document.createElement('h4'); title.innerText = name || (opts.isPrivate ? '私聊用户' : '组别');
+            titleRow.appendChild(title);
+
+            if(opts.groupId){
+                const badge = document.createElement('div'); badge.className='group-badge'; badge.textContent = '群号: ' + opts.groupId;
+                titleRow.appendChild(badge);
+            }
+
+            card.appendChild(iconWrap);
+            card.appendChild(titleRow);
+
+            // 成员使用网格显示，卡片高度随成员数量自适应
+            const membersGrid = document.createElement('div'); membersGrid.className = 'members-grid';
+            if(Array.isArray(members) && members.length>0){
+                members.forEach(m=>{
+                    const mcard = document.createElement('div'); mcard.className='member-card';
+                    const initials = (m && m.name) ? m.name.split(' ').map(s=>s[0]).join('').slice(0,2) : '?';
+                    const avatarWrap = document.createElement('span'); avatarWrap.className='avatar-wrap';
+                    if(m && m.avatar && m.avatar.toString().trim() !== ''){
+                        const img = document.createElement('img'); img.className='avatar-img'; img.src = 'pictures/' + m.avatar; img.alt = m.name || '';
+                        img.onerror = function(){ try{ avatarWrap.removeChild(img); }catch(e){}; const initialsSpan = document.createElement('span'); initialsSpan.className='avatar'; initialsSpan.textContent = initials; avatarWrap.appendChild(initialsSpan); };
+                        avatarWrap.appendChild(img);
+                    } else { const initialsSpan = document.createElement('span'); initialsSpan.className='avatar'; initialsSpan.textContent = initials; avatarWrap.appendChild(initialsSpan); }
+
+                    const info = document.createElement('div');
+                    const nameEl = document.createElement('div'); nameEl.className='member-name'; nameEl.textContent = m && m.name ? m.name : JSON.stringify(m);
+                    const roleEl = document.createElement('div'); roleEl.className='member-role'; roleEl.textContent = m && m.role ? m.role : '';
+                    info.appendChild(nameEl); if(roleEl.textContent) info.appendChild(roleEl);
+
+                    mcard.appendChild(avatarWrap);
+                    mcard.appendChild(info);
+                    membersGrid.appendChild(mcard);
+                });
+            } else {
+                const none = document.createElement('div'); none.className='member-card'; none.textContent = '无成员信息'; membersGrid.appendChild(none);
+            }
+            card.appendChild(membersGrid);
+            return card;
+        }
+
+        async function loadContributors(){
+            const container = document.getElementById('thanks-container');
+            container.innerHTML = '';
+            try{
+                const res = await fetch('Contributor-list.json', {cache: 'no-store'});
+                if(!res.ok) throw new Error('HTTP '+res.status);
+                const data = await res.json();
+                if(!Array.isArray(data)) throw new Error('JSON 格式不是数组');
+
+                let cardIndex = 0;
+                data.forEach(typeObj=>{
+                    const section = document.createElement('section');
+                    section.className = 'thanks-section';
+                    const title = document.createElement('div');
+                    title.className = 'section-title';
+                    title.innerHTML = `<i class='fas fa-hand-holding-heart'></i> ${escapeHtml(typeObj.type || typeObj.name || '感谢')}`;
+                    section.appendChild(title);
+
+                    const grid = document.createElement('div'); grid.className = 'features-grid';
+
+                        // 特殊处理 supporters：显示 groups，每个 group 显示 name 和 group_id，另外展示 private_users
+                        const t = (typeObj.type || '').toString().toLowerCase();
+                        if(t === 'supporters'){
+                            if(typeObj.groups && Array.isArray(typeObj.groups)){
+                                typeObj.groups.forEach(g=>{
+                                    const delay = (cardIndex++ * 80) + 'ms';
+                                    grid.appendChild(buildGroupCard(g.name || '组别', g.members || [], {role: 'supporter', groupId: g.group_id, delay}));
+                                });
+                            }
+                            // private_users 为平级列表，直接列出成员
+                            if(typeObj.private_users && Array.isArray(typeObj.private_users)){
+                                // create a dedicated card for private users
+                                const delay = (cardIndex++ * 80) + 'ms';
+                                grid.appendChild(buildGroupCard('私聊用户', typeObj.private_users, {role: 'supporter', isPrivate: true, delay}));
+                            }
+                        } else if(t === 'developers' || t === 'developer'){
+                            // 开发者：把整个成员列表放在一个卡片内
+                            if(typeObj.members && Array.isArray(typeObj.members)){
+                                const delay = (cardIndex++ * 80) + 'ms';
+                                grid.appendChild(buildGroupCard(typeObj.name || '开发人员', typeObj.members, {role: 'developer', delay}));
+                            }
+                        } else if(t === 'sponsors' || t === 'sponsor'){
+                            if(typeObj.members && Array.isArray(typeObj.members)){
+                                const delay = (cardIndex++ * 80) + 'ms';
+                                grid.appendChild(buildGroupCard(typeObj.name || '赞助者', typeObj.members, {role: 'sponsor', delay}));
+                            }
+                        } else {
+                            // 兜底：按原样渲染
+                            if(typeObj.groups && Array.isArray(typeObj.groups)){
+                                    typeObj.groups.forEach(g=>{
+                                        const delay = (cardIndex++ * 80) + 'ms';
+                                        grid.appendChild(buildGroupCard(g.name || '组别', g.members || [], {delay}));
+                                    });
+                                } else if(typeObj.members && Array.isArray(typeObj.members)){
+                                    const groupName = typeObj.name || (typeObj.type ? typeObj.type + ' 成员' : '成员');
+                                    const delay = (cardIndex++ * 80) + 'ms';
+                                    grid.appendChild(buildGroupCard(groupName, typeObj.members, {delay}));
+                            } else if(typeObj.name && typeObj.members===undefined && typeObj.groups===undefined){
+                                    const delay = (cardIndex++ * 80) + 'ms';
+                                    grid.appendChild(buildGroupCard(typeObj.name, typeObj.members || [], {delay}));
+                            }
+                        }
+
+                    section.appendChild(grid);
+                    container.appendChild(section);
+                });
+
+            }catch(e){
+                console.error(e);
+                container.innerHTML = `<p class="note">加载失败：${escapeHtml(e.message || e)}</p>`;
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', ()=>{
+            loadContributors();
+            // 主题切换初始化（Thanks 页面）
+            (function(){
+                const toggle = document.getElementById('theme-toggle');
+                if(!toggle) return;
+                const root = document.documentElement;
+                const stored = localStorage.getItem('theme');
+                const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const initTheme = stored || (prefersDark ? 'dark' : 'light');
+                if(initTheme === 'dark') root.setAttribute('data-theme','dark');
+                function updateIcon(){
+                    const isDark = root.getAttribute('data-theme') === 'dark';
+                    toggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                }
+                toggle.addEventListener('click', ()=>{
+                    const cur = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                    root.setAttribute('data-theme', cur);
+                    localStorage.setItem('theme', cur);
+                    updateIcon();
+                });
+                updateIcon();
+            })();
+        });
+    </script>
+    <!-- 大型感谢区 -->
+    <section style="max-width:1180px;margin:40px auto 80px;padding:40px 22px;text-align:center;">
+        <div style="background:linear-gradient(90deg,#fff,#f7fbff);border-radius:14px;padding:40px 30px;box-shadow:0 20px 40px rgba(15,23,36,0.08);">
+            <h2 style="font-family:'SJ-Narrow','Poppins',sans-serif;font-size:48px;margin:0;color:var(--text-dark);letter-spacing:2px;">AND, THANK YOU</h2>
+            <p style="font-size:20px;color:var(--muted);margin-top:12px;">感谢您的支持和参与</p>
+        </div>
+    </section>
+</body>
+</html>

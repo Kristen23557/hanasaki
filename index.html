@@ -9,6 +9,38 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
+        /* 暗色主题覆盖 */
+        [data-theme="dark"]{
+            --primary-blue: #5480b8;
+            --light-blue: #3b5f8a;
+            --dark-blue: #0e2a3f;
+            --yellow-accent: #f6c85f;
+            --yellow-light: #f7d67a;
+            --gray-bg: #0b1220;
+            --gray-dark: #e6eefc;
+            --text-light: #e6eefc;
+            --text-dark: #e6eefc;
+            --text-medium: #b9c6d6;
+            --card-bg: rgba(10,16,24,0.7);
+            --shadow: 0 10px 30px rgba(0,0,0,0.6);
+            --shadow-hover: 0 18px 50px rgba(0,0,0,0.7);
+            background-color: #05060a;
+        }
+        /* 引入本地 SJ-Narrow 字体（Regular / Light）供标题与强调使用 */
+        @font-face{
+            font-family: 'SJ-Narrow';
+            src: url('fonts/SJ-Narrow-Regular-2.ttf') format('truetype');
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face{
+            font-family: 'SJ-Narrow';
+            src: url('fonts/SJ-Narrow-Light-2.ttf') format('truetype');
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -162,11 +194,13 @@
         }
 
         .name-section h1 {
-            font-size: 3.5rem;
-            margin-bottom: 10px;
-            color: var(--dark-blue);
-            font-weight: 700;
-            letter-spacing: 1px;
+              font-family: 'SJ-Narrow', 'Poppins', sans-serif;
+              font-size: 3.6rem;
+              margin-bottom: 10px;
+              color: var(--dark-blue);
+              font-weight: 800;
+              letter-spacing: 1px;
+              text-shadow: 0 6px 18px rgba(106,147,201,0.08);
         }
 
         .name-section h2 {
@@ -177,15 +211,17 @@
         }
 
         .alias {
-            display: inline-block;
-            background: linear-gradient(135deg, var(--yellow-accent), var(--yellow-light));
-            color: var(--text-dark);
-            padding: 8px 20px;
-            border-radius: 25px;
-            font-size: 1.3rem;
-            margin-top: 10px;
-            font-weight: 600;
-            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
+              display: inline-block;
+              background: linear-gradient(135deg, var(--yellow-accent), var(--yellow-light));
+              color: var(--text-dark);
+              padding: 8px 20px;
+              border-radius: 25px;
+              font-size: 1.2rem;
+              margin-top: 10px;
+              font-weight: 700;
+              box-shadow: 0 8px 30px rgba(255, 204, 0, 0.18);
+              transform: translateY(0);
+              transition: transform 0.35s ease;
         }
 
         /* 介绍区域 */
@@ -218,12 +254,14 @@
         }
 
         .intro-section h3 {
-            font-size: 2.5rem;
-            margin-bottom: 30px;
-            color: var(--dark-blue);
-            display: flex;
-            align-items: center;
-            font-weight: 700;
+              font-family: 'SJ-Narrow', 'Poppins', sans-serif;
+              font-size: 2.4rem;
+              margin-bottom: 30px;
+              color: var(--dark-blue);
+              display: flex;
+              align-items: center;
+              font-weight: 800;
+              letter-spacing: 0.6px;
         }
 
         .intro-section h3 i {
@@ -276,9 +314,9 @@
         }
 
         .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 30px;
+              display: grid;
+              grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+              gap: 30px;
         }
 
         .feature-card {
@@ -292,6 +330,7 @@
             flex-direction: column;
             align-items: flex-start;
             border-top: 5px solid transparent;
+            opacity:0; transform:translateY(18px); animation: featureIn 480ms cubic-bezier(.2,.9,.2,1) forwards; animation-delay: var(--i,0ms);
         }
 
         .feature-card:hover {
@@ -312,6 +351,12 @@
             align-items: center;
             justify-content: center;
         }
+
+        @keyframes featureIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+        /* avatar 微动 */
+        .avatar { transition: transform 420ms ease, box-shadow 420ms ease; }
+        .avatar:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 25px 50px rgba(0,0,0,0.12);} 
 
         .feature-card h4 {
             font-size: 1.5rem;
@@ -612,6 +657,44 @@
             }
         }
 
+        /* 顶部导航样式（小型） */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 12px auto;
+            padding: 10px 18px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 10px;
+            z-index: 3;
+        }
+
+        .nav-toggle{background:transparent;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;color:var(--text-medium);font-size:18px}
+        .nav-toggle:hover{background:rgba(255,255,255,0.03);color:var(--text-light);transform:translateY(-2px)}
+
+        .top-nav .nav-logo {
+            color: var(--dark-blue);
+            font-weight: 700;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+
+        .top-nav .nav-links a {
+            color: var(--text-medium);
+            text-decoration: none;
+            margin-left: 16px;
+            font-weight: 600;
+        }
+
+        .top-nav .nav-links a:hover {
+            color: var(--dark-blue);
+            transform: translateY(-2px);
+        }
+
         /* 动画效果 */
         @keyframes fadeInUp {
             from {
@@ -626,6 +709,20 @@
     </style>
 </head>
 <body>
+    <!-- 顶部导航栏 -->
+    <div class="content-wrapper" style="padding-top:18px;">
+        <nav class="top-nav" aria-label="主导航">
+            <div class="nav-left">
+                <a href="index.html" class="nav-logo">花咲一秋</a>
+            </div>
+            <div class="nav-right nav-links">
+                <a href="Documents.html">帮助手册</a>
+                <a href="Thanks.html">感谢名单</a>
+                <button id="theme-toggle" class="nav-toggle" aria-label="切换主题"><i class="fas fa-moon"></i></button>
+            </div>
+        </nav>
+    </div>
+
     <!-- 主要内容区域 -->
     <div class="main-content">
         <!-- 装饰性背景元素 -->
@@ -639,7 +736,7 @@
             <!-- 头部区域 -->
             <div class="header">
                 <div class="avatar-container">
-                    <img src="pictures/Avatar.jpg" alt="花咲一秋头像" class="avatar">
+                    <img src="pictures/Avatar_Hanasaki.jpg" alt="花咲一秋头像" class="avatar">
                     <div class="avatar-frame"></div>
                 </div>
                 <div class="name-section">
@@ -792,7 +889,7 @@
 
             <!-- 页脚 -->
             <footer class="footer">
-                <p>© 2023 花咲一秋QQ机器人项目. 保留所有权利.</p>
+                <p>© 2025~2026 花咲一秋QQ机器人项目. 保留所有权利.</p>
                 <p>本页面由 <strong>卡秋KArabella和支持此项目的早期伙伴们</strong> 开发维护</p>
                 <p>本页面仅为介绍页面，机器人功能以实际可用为准</p>
                 <p>感谢每一位支持此项目的用户，你们的反馈让小秋变得更好</p>
@@ -802,6 +899,27 @@
     </div>
 
     <script>
+        // 主题切换脚本（在 index 页面）
+        (function(){
+            const toggle = document.getElementById('theme-toggle');
+            if(!toggle) return;
+            const root = document.documentElement;
+            const stored = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initTheme = stored || (prefersDark ? 'dark' : 'light');
+            if(initTheme === 'dark') root.setAttribute('data-theme','dark');
+            function updateIcon(){
+                const isDark = root.getAttribute('data-theme') === 'dark';
+                toggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+            }
+            toggle.addEventListener('click', ()=>{
+                const cur = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+                root.setAttribute('data-theme', cur);
+                localStorage.setItem('theme', cur);
+                updateIcon();
+            });
+            updateIcon();
+        })();
     </script>
 </body>
 </html>
