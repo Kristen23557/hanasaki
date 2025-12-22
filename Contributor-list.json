@@ -1,0 +1,20 @@
+[
+  { "group": "Developers",
+    "members": [
+      { "name": "KArabella" },
+      { "name": "Another Contributor" }
+    ]
+  },
+  { "group": "supporters",
+    "members": [
+      { "name": "Supporter1" },
+      { "name": "Supporter2" }
+    ]
+  },
+  { "group":"sponsers",
+    "members": [
+      { "name": "Sponsor1" },
+      { "name": "Sponsor2" }
+    ]
+  }
+]
