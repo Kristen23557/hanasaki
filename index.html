@@ -8,8 +8,26 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- 优先使用 woff2，若无则回退到 ttf；font-display:swap 提升可见性 -->
+    <style>
+        @font-face{
+            font-family: 'SJ-Narrow';
+            src: url('fonts/SJ-Narrow.woff2') format('woff2'), url('fonts/SJ-Narrow-Regular-2.ttf') format('truetype');
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face{
+            font-family: 'SJ-Narrow';
+            src: url('fonts/SJ-Narrow-Light.woff2') format('woff2'), url('fonts/SJ-Narrow-Light-2.ttf') format('truetype');
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+        }
+    </style>
     <script>
         // 在 CSS 之前设置主题属性，避免闪烁
+        //Null-Qwerty's Blog可以学习参考
         (function(){
             try{
                 var stored = localStorage.getItem('theme');
@@ -17,6 +35,22 @@
                 var use = stored || (prefersDark ? 'dark' : 'light');
                 if(use === 'dark') document.documentElement.setAttribute('data-theme','dark');
             }catch(e){}
+        })();
+
+        // 可访问性：减少动画偏好（Index 页面）
+        (function(){
+            const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+            if(mq.matches){ document.documentElement.classList.add('reduce-motion'); }
+            mq.addEventListener && mq.addEventListener('change', (e)=>{ if(e.matches) document.documentElement.classList.add('reduce-motion'); else document.documentElement.classList.remove('reduce-motion'); });
+        })();
+
+        // 观察器：为 index 页面卡片添加入场触发（插入后绑定）
+        (function(){
+            const obs = new IntersectionObserver((entries)=>{
+                entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in-view'); obs.unobserve(e.target); } });
+            },{threshold:0.12});
+            const attach = ()=>{ const cards = document.querySelectorAll('.feature-card'); if(cards.length){ cards.forEach(c=>obs.observe(c)); } else setTimeout(attach,120); };
+            attach();
         })();
     </script>
     <style>
@@ -48,6 +82,18 @@
             --yellow-accent: #ffcc00;
             --yellow-light: #ffdb4d;
             --gray-bg: #f0f2f5;
+            --main-bg: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            --bg-element: rgba(106,147,201,0.05);
+            --header-border: rgba(74, 111, 165, 0.1);
+            --highlight-bg: rgba(106, 147, 201, 0.1);
+            --contact-bg: linear-gradient(135deg, rgba(106, 147, 201, 0.1), rgba(143, 181, 230, 0.1));
+            --contact-border: rgba(106, 147, 201, 0.2);
+            --contact-divider: rgba(106, 147, 201, 0.1);
+            --warning-bg: rgba(255, 100, 100, 0.1);
+            --warning-border: #ff6b6b;
+            --footer-border: rgba(106, 147, 201, 0.2);
+            --icon-bg: rgba(255, 204, 0, 0.1);
+            --tag-hover: rgba(255, 204, 0, 0.2);
             --gray-dark: #333333;
             --text-light: #ffffff;
             --text-dark: #2c3e50;
@@ -56,6 +102,9 @@
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.12);
             --transition: all 0.3s ease;
+            /* 文本色与标题色变量（用于统一对比） */
+            --text: var(--text-dark);
+            --heading-color: var(--dark-blue);
         }
 
         /* 暗色主题覆盖（放在 :root 之后以确保覆盖默认变量） */
@@ -66,6 +115,18 @@
             --yellow-accent: #f6c85f;
             --yellow-light: #f7d67a;
             --gray-bg: #0b1220;
+            --main-bg: linear-gradient(135deg, #061020 0%, #041018 100%);
+            --bg-element: rgba(106,147,201,0.12);
+            --header-border: rgba(74, 111, 165, 0.06);
+            --highlight-bg: rgba(255,255,255,0.03);
+            --contact-bg: linear-gradient(135deg, rgba(10,12,16,0.6), rgba(20,30,40,0.6));
+            --contact-border: rgba(255,255,255,0.06);
+            --contact-divider: rgba(255,255,255,0.03);
+            --warning-bg: rgba(255, 60, 60, 0.08);
+            --warning-border: #ff8b8b;
+            --footer-border: rgba(255,255,255,0.04);
+            --icon-bg: rgba(255, 204, 0, 0.05);
+            --tag-hover: rgba(255, 204, 0, 0.08);
             --gray-dark: #e6eefc;
             --text-light: #e6eefc;
             --text-dark: #e6eefc;
@@ -74,10 +135,51 @@
             --shadow: 0 10px 30px rgba(0,0,0,0.6);
             --shadow-hover: 0 18px 50px rgba(0,0,0,0.7);
             background-color: #05060a;
+            /* 深色下统一文本/标题色 */
+            --text: var(--text-dark);
+            --heading-color: var(--text-dark);
+        }
+
+        /* 高对比模式：用于更强的前景/背景反差 */
+        :root[data-theme="high-contrast"]{
+            --primary-blue: #0b5fc7;
+            --light-blue: #0b5fc7;
+            --dark-blue: #05223a;
+            --yellow-accent: #ffd43b;
+            --gray-bg: #ffffff;
+            --main-bg: #ffffff;
+            --bg-element: rgba(0,0,0,0.06);
+            --header-border: rgba(0,0,0,0.12);
+            --highlight-bg: rgba(0,0,0,0.04);
+            --contact-bg: linear-gradient(135deg, rgba(255,255,255,0.98), rgba(250,250,250,0.98));
+            --contact-border: rgba(0,0,0,0.12);
+            --contact-divider: rgba(0,0,0,0.06);
+            --warning-bg: rgba(255,0,0,0.06);
+            --warning-border: #c70000;
+            --footer-border: rgba(0,0,0,0.12);
+            --icon-bg: rgba(0,0,0,0.06);
+            --tag-hover: rgba(0,0,0,0.08);
+            --gray-dark: #111111;
+            --text-light: #111111;
+            --text-dark: #111111;
+            --text-medium: #333333;
+            --card-bg: #ffffff;
+            --shadow: 0 6px 18px rgba(0,0,0,0.09);
+            --shadow-hover: 0 12px 28px rgba(0,0,0,0.12);
+            --text: var(--text-dark);
+            --heading-color: var(--text-dark);
+        }
+
+        /* 减少动画（全局类，配合 JS 输入） */
+        .reduced-motion *, .reduced-motion *::before, .reduced-motion *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
         }
 
         body {
-            background-color: var(--gray-bg);
+            background: var(--main-bg);
             overflow-x: hidden;
             min-height: 100vh;
             font-family: 'Noto Sans SC', 'Segoe UI', sans-serif;
@@ -89,7 +191,7 @@
         .main-content {
             width: 100%;
             min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            background: var(--main-bg);
             position: relative;
             overflow-y: auto;
         }
@@ -114,7 +216,7 @@
         .bg-element {
             position: absolute;
             border-radius: 50%;
-            background-color: rgba(106, 147, 201, 0.05);
+            background-color: var(--bg-element);
         }
 
         .bg-1 {
@@ -144,7 +246,7 @@
             align-items: center;
             margin-bottom: 60px;
             padding-bottom: 40px;
-            border-bottom: 2px solid rgba(74, 111, 165, 0.1);
+            border-bottom: 2px solid var(--header-border);
             position: relative;
             z-index: 1;
             background-color: var(--card-bg);
@@ -205,15 +307,15 @@
             }
         }
 
-        .name-section h1 {
+          .name-section h1 {
               font-family: 'SJ-Narrow', 'Poppins', sans-serif;
               font-size: 3.6rem;
               margin-bottom: 10px;
-              color: var(--dark-blue);
+              color: var(--heading-color);
               font-weight: 800;
               letter-spacing: 1px;
               text-shadow: 0 6px 18px rgba(106,147,201,0.08);
-        }
+          }
 
         .name-section h2 {
             font-size: 2.2rem;
@@ -296,7 +398,7 @@
             font-weight: 700;
             font-size: 1.3rem;
             padding: 15px;
-            background-color: rgba(106, 147, 201, 0.1);
+            background-color: var(--highlight-bg);
             border-radius: 10px;
             border-left: 4px solid var(--yellow-accent);
             margin-top: 20px;
@@ -342,8 +444,9 @@
             flex-direction: column;
             align-items: flex-start;
             border-top: 5px solid transparent;
-            opacity:0; transform:translateY(18px); animation: featureIn 480ms cubic-bezier(.2,.9,.2,1) forwards; animation-delay: var(--i,0ms);
+            opacity:0; transform:translateY(18px);
         }
+        .feature-card.in-view { animation: featureIn 480ms cubic-bezier(.2,.9,.2,1) forwards; animation-delay: var(--i,0ms); }
 
         .feature-card:hover {
             transform: translateY(-10px);
@@ -355,7 +458,7 @@
             font-size: 2.5rem;
             color: var(--yellow-accent);
             margin-bottom: 20px;
-            background-color: rgba(255, 204, 0, 0.1);
+            background-color: var(--icon-bg);
             width: 70px;
             height: 70px;
             border-radius: 50%;
@@ -373,12 +476,12 @@
         .feature-card h4 {
             font-size: 1.5rem;
             margin-bottom: 15px;
-            color: var(--dark-blue);
+            color: var(--heading-color);
             font-weight: 600;
         }
 
         .feature-card p {
-            color: var(--text-medium);
+            color: var(--text);
             font-size: 1.1rem;
             line-height: 1.6;
         }
@@ -425,11 +528,11 @@
         }
 
         .contact-info {
-            background: linear-gradient(135deg, rgba(106, 147, 201, 0.1), rgba(143, 181, 230, 0.1));
+            background: var(--contact-bg);
             border-radius: 15px;
             padding: 30px;
             margin: 35px 0;
-            border: 1px solid rgba(106, 147, 201, 0.2);
+            border: 1px solid var(--contact-border);
         }
 
         .contact-item {
@@ -437,7 +540,7 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 20px;
-            border-bottom: 1px solid rgba(106, 147, 201, 0.1);
+            border-bottom: 1px solid var(--contact-divider);
         }
 
         .contact-item:last-child {
@@ -464,8 +567,8 @@
         }
 
         .warning {
-            background-color: rgba(255, 100, 100, 0.1);
-            border-left: 5px solid #ff6b6b;
+            background-color: var(--warning-bg);
+            border-left: 5px solid var(--warning-border);
             padding: 25px;
             border-radius: 0 12px 12px 0;
             margin: 30px 0;
@@ -545,7 +648,7 @@
         }
 
         .tag {
-            background-color: rgba(106, 147, 201, 0.1);
+            background-color: var(--highlight-bg);
             color: var(--dark-blue);
             padding: 8px 18px;
             border-radius: 20px;
@@ -555,15 +658,27 @@
         }
 
         .tag:hover {
-            background-color: rgba(255, 204, 0, 0.2);
+            background-color: var(--tag-hover);
             transform: scale(1.05);
+        }
+
+        /* 可访问性：焦点可见性 */
+        :focus-visible {
+            outline: 3px solid var(--yellow-accent);
+            outline-offset: 3px;
+            border-radius: 6px;
+        }
+
+        /* 尊重用户偏好：减少动画 */
+        @media (prefers-reduced-motion: reduce) {
+            * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; scroll-behavior: auto !important; }
         }
 
         /* 页脚 */
         .footer {
             text-align: center;
             padding: 50px 0;
-            border-top: 1px solid rgba(106, 147, 201, 0.2);
+            border-top: 1px solid var(--footer-border);
             color: var(--text-medium);
             font-size: 1rem;
             position: relative;
@@ -734,6 +849,8 @@
                 <a href="Documents.html">帮助手册</a>
                 <a href="Thanks.html">感谢名单</a>
                 <button id="theme-toggle" class="nav-toggle" aria-label="切换主题"><i class="fas fa-moon"></i></button>
+                <button id="contrast-toggle" class="nav-toggle" aria-label="高对比">HC</button>
+                <button id="motion-toggle" class="nav-toggle" aria-label="动画开关">⭘</button>
             </div>
         </nav>
     </div>
@@ -922,17 +1039,77 @@
             const stored = localStorage.getItem('theme');
             const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             const initTheme = stored || (prefersDark ? 'dark' : 'light');
-            if(initTheme === 'dark') root.setAttribute('data-theme','dark');
+            // 支持： 'light' | 'dark' | 'high-contrast' | 'auto'
+            function applyThemeFromPref(pref){
+                if(!pref || pref === 'auto'){
+                    const sys = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                    root.setAttribute('data-theme', sys);
+                } else {
+                    root.setAttribute('data-theme', pref);
+                }
+            }
+            applyThemeFromPref(initTheme === 'auto' ? null : initTheme);
             function updateIcon(){
-                const isDark = root.getAttribute('data-theme') === 'dark';
-                toggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                const t = root.getAttribute('data-theme');
+                if(t === 'dark') toggle.innerHTML = '<i class="fas fa-sun"></i>';
+                else if(t === 'high-contrast') toggle.innerHTML = '<i class="fas fa-adjust"></i>';
+                else toggle.innerHTML = '<i class="fas fa-moon"></i>';
             }
             toggle.addEventListener('click', ()=>{
+                // 点击在 light/dark 之间切换（但不会取消 high-contrast）
                 const cur = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
                 root.setAttribute('data-theme', cur);
                 localStorage.setItem('theme', cur);
                 updateIcon();
             });
+            // 高对比开关
+            const contrastBtn = document.getElementById('contrast-toggle');
+            if(contrastBtn){
+                function updateContrastBtn(){
+                    const cur = localStorage.getItem('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light');
+                    if(cur === 'high-contrast'){ contrastBtn.innerHTML = '<i class="fas fa-adjust"></i>'; contrastBtn.setAttribute('aria-pressed','true'); }
+                    else { contrastBtn.innerHTML = '<i class="fas fa-eye"></i>'; contrastBtn.setAttribute('aria-pressed','false'); }
+                }
+                contrastBtn.addEventListener('click', ()=>{
+                    const current = localStorage.getItem('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light');
+                    const next = current === 'high-contrast' ? 'auto' : 'high-contrast';
+                    if(next === 'auto') localStorage.removeItem('theme'); else localStorage.setItem('theme', next);
+                    applyThemeFromPref(localStorage.getItem('theme') || null);
+                    updateIcon();
+                    updateContrastBtn();
+                });
+                updateContrastBtn();
+            }
+            // 动画开关（强制减少动画）
+            const motionBtn = document.getElementById('motion-toggle');
+            function applyMotionPref(){
+                const storedM = localStorage.getItem('reduceMotion');
+                if(storedM === '1') document.documentElement.classList.add('reduced-motion');
+                else if(storedM === '0') document.documentElement.classList.remove('reduced-motion');
+                else {
+                    if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('reduced-motion');
+                }
+            }
+            if(motionBtn){
+                function updateMotionBtn(){
+                    const cur = localStorage.getItem('reduceMotion');
+                    if(cur === '1' || (cur === null && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+                        motionBtn.innerHTML = '<i class="fas fa-ban"></i>';
+                        motionBtn.setAttribute('aria-pressed','true');
+                    } else {
+                        motionBtn.innerHTML = '<i class="fas fa-bolt"></i>';
+                        motionBtn.setAttribute('aria-pressed','false');
+                    }
+                }
+                motionBtn.addEventListener('click', ()=>{
+                    const cur = localStorage.getItem('reduceMotion');
+                    if(cur === '1'){ localStorage.setItem('reduceMotion','0'); } else { localStorage.setItem('reduceMotion','1'); }
+                    applyMotionPref();
+                    updateMotionBtn();
+                });
+                updateMotionBtn();
+            }
+            applyMotionPref();
             updateIcon();
         })();
 

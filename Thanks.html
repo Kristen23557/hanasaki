@@ -8,6 +8,23 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- 优先使用 woff2，若无则回退到 ttf；font-display:swap 提升可见性 -->
+    <style>
+        @font-face{
+            font-family: 'SJ-Narrow';
+            src: url('fonts/SJ-Narrow.woff2') format('woff2'), url('fonts/SJ-Narrow-Regular-2.ttf') format('truetype');
+            font-weight: 600;
+            font-style: normal;
+            font-display: swap;
+        }
+        @font-face{
+            font-family: 'SJ-Narrow';
+            src: url('fonts/SJ-Narrow-Light.woff2') format('woff2'), url('fonts/SJ-Narrow-Light-2.ttf') format('truetype');
+            font-weight: 300;
+            font-style: normal;
+            font-display: swap;
+        }
+    </style>
     <script>
         // 在 CSS 之前设置主题，避免初始闪烁
         (function(){
@@ -41,9 +58,20 @@
             --mint: #2ecc71;
             --gold: #ffcc00;
             --bg: linear-gradient(180deg, #f6f8fb 0%, #eef3f9 100%);
+            --main-bg: linear-gradient(180deg, #f6f8fb 0%, #eef3f9 100%);
+            --section-icon-bg: linear-gradient(90deg,#fff8fb, #fff);
+            --thank-bg: linear-gradient(90deg,#fff,#f7fbff);
             --card-bg: rgba(255,255,255,0.98);
+            --private-bg: linear-gradient(90deg, rgba(255,255,255,0.98), rgba(250,246,255,0.98));
+            --icon-bg: rgba(255, 204, 0, 0.08);
+            --text: var(--text-dark);
+            --heading-color: var(--text-dark);
             --muted: #6b7280;
             --text-dark: #0f1724;
+            --text: #0f1724;
+            --badge-bg: rgba(15,23,36,0.04);
+            --member-bg: rgba(15,23,36,0.02);
+            --member-border: rgba(15,23,36,0.04);
             --glass: rgba(255,255,255,0.6);
             --shadow-soft: 0 8px 30px rgba(15,23,36,0.06);
             --shadow-strong: 0 20px 50px rgba(15,23,36,0.12);
@@ -58,11 +86,55 @@
             --mint: #27b16b;
             --gold: #f0c24a;
             --bg: linear-gradient(180deg,#07101a 0%, #04111a 100%);
-            --card-bg: rgba(10,14,20,0.75);
+            --main-bg: linear-gradient(180deg,#07101a 0%, #04111a 100%);
+            --section-icon-bg: linear-gradient(90deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+            --thank-bg: linear-gradient(90deg, rgba(10,12,16,0.85), rgba(14,18,26,0.9));
+            --card-bg: rgba(10,14,20,0.85);
+            --private-bg: rgba(12,18,26,0.7);
             --muted: #9fb0c8;
             --text-dark: #eaf3ff;
+            --text: #eaf3ff;
+            --badge-bg: rgba(255,255,255,0.04);
+            --member-bg: rgba(255,255,255,0.03);
+            --member-border: rgba(255,255,255,0.06);
+            --icon-bg: rgba(255,204,0,0.05);
+            --text: var(--text-dark);
+            --heading-color: var(--text-dark);
             --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
             --shadow-strong: 0 30px 70px rgba(0,0,0,0.7);
+        }
+
+        /* 高对比模式 */
+        :root[data-theme="high-contrast"]{
+            --primary-blue: #0b5fc7;
+            --accent-pink: #ff0077;
+            --mint: #00a64f;
+            --gold: #ffd43b;
+            --bg: #ffffff;
+            --main-bg: #ffffff;
+            --section-icon-bg: rgba(0,0,0,0.04);
+            --thank-bg: linear-gradient(90deg,#ffffff,#f7fbff);
+            --card-bg: #ffffff;
+            --private-bg: linear-gradient(90deg, #fff, #fff);
+            --muted: #333333;
+            --text-dark: #111111;
+            --text: #111111;
+            --badge-bg: rgba(0,0,0,0.04);
+            --member-bg: rgba(0,0,0,0.02);
+            --member-border: rgba(0,0,0,0.06);
+            --icon-bg: rgba(0,0,0,0.04);
+            --shadow-soft: 0 6px 18px rgba(0,0,0,0.08);
+            --shadow-strong: 0 12px 30px rgba(0,0,0,0.12);
+            --text: var(--text-dark);
+            --heading-color: var(--text-dark);
+        }
+
+        /* 减少动画的全局类（与 JS 配合） */
+        .reduced-motion *, .reduced-motion *::before, .reduced-motion *::after {
+            animation-duration: 0.001ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.001ms !important;
+            scroll-behavior: auto !important;
         }
         html,body{height:100%;}
         body{margin:0;padding:0;font-family:'Poppins', 'Noto Sans SC', sans-serif;background:var(--bg);color:var(--text-dark);-webkit-font-smoothing:antialiased}
@@ -80,13 +152,14 @@
         header h1{font-size:1.6rem;margin:0;color:var(--text-dark)}
         .note{color:var(--muted);font-size:0.95rem}
 
-        .section-title{display:flex;align-items:center;gap:12px;margin:22px 0 12px;font-size:1.2rem;color:var(--text-dark)}
-        .section-title i{color:var(--accent-pink);background:linear-gradient(90deg,#fff8fb, #fff);width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-soft)}
+        .section-title{display:flex;align-items:center;gap:12px;margin:22px 0 12px;font-size:1.2rem;color:var(--text)}
+        .section-title i{color:var(--accent-pink);background:var(--section-icon-bg);width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-soft)}
 
         /* 布局：每行仅一个卡片（全宽），卡片内部成员以行内网格展示 */
         .features-grid{display:grid;grid-template-columns:1fr;gap:24px;margin-top:18px}
 
-        .feature-card{background:var(--card-bg);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-soft);transition:transform var(--transition),box-shadow var(--transition);position:relative;overflow:hidden;opacity:0;transform:translateY(12px);animation:cardIn 420ms cubic-bezier(.2,.9,.2,1) forwards;animation-delay:var(--i,0ms)}
+        .feature-card{background:var(--card-bg);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-soft);transition:transform var(--transition),box-shadow var(--transition);position:relative;overflow:hidden;opacity:0;transform:translateY(12px)}
+        .feature-card.in-view{animation:cardIn 420ms cubic-bezier(.2,.9,.2,1) forwards;animation-delay:var(--i,0ms)}
         .feature-card::after{content:'';position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:0}
         .feature-card:hover{transform:translateY(-10px) scale(1.01);box-shadow:var(--shadow-strong)}
 
@@ -97,27 +170,27 @@
         .feature-card.developer{border-top:6px solid var(--mint)}
         .feature-card.sponsor{border-top:6px solid var(--gold)}
 
-        .feature-card .icon{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:22px}
+        .feature-card .icon{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:22px;background:var(--icon-bg)}
         .feature-card .title-row{display:flex;align-items:center;justify-content:space-between;gap:12px}
         /* 使用 SJ-Narrow（若可用）作为标题字体 */
-        .feature-card h4{font-family:'SJ-Narrow', 'Poppins', 'Noto Sans SC', sans-serif;font-size:1.45rem;color:var(--text-dark);margin:0 0 12px;font-weight:700}
+        .feature-card h4{font-family:'SJ-Narrow', 'Poppins', 'Noto Sans SC', sans-serif;font-size:1.45rem;color:var(--heading-color);margin:0 0 12px;font-weight:700}
         .feature-card .group-sub{color:var(--muted);font-size:0.95rem}
 
-        .group-badge{background:rgba(0,0,0,0.06);color:var(--muted);padding:6px 8px;border-radius:10px;font-size:0.85rem}
+        .group-badge{background:var(--badge-bg);color:var(--muted);padding:6px 8px;border-radius:10px;font-size:0.85rem}
 
         /* 成员显示为行内网格，可多列显示 */
         .members-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:12px}
-        .member-card{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(0,0,0,0.02);border-radius:10px}
-        .member-name{font-family:'SJ-Narrow','Poppins',sans-serif;font-size:1.12rem;color:var(--text-dark);font-weight:700}
+        .member-card{display:flex;align-items:center;gap:12px;padding:12px;background:var(--member-bg);border-radius:10px}
+        .member-name{font-family:'SJ-Narrow','Poppins',sans-serif;font-size:1.12rem;color:var(--text);font-weight:700}
         .member-card{transition:transform 260ms cubic-bezier(.2,.9,.2,1),box-shadow 260ms}
         .member-card:hover{transform:translateY(-6px);box-shadow:0 10px 30px rgba(15,23,36,0.06)}
         .avatar{width:56px;height:56px;border-radius:12px;display:inline-flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#fff,#f3f6fb);color:var(--primary-blue);font-weight:700;font-size:1rem}
-        .avatar-img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid rgba(0,0,0,0.04)}
+        .avatar-img{width:56px;height:56px;border-radius:12px;object-fit:cover;border:1px solid var(--member-border)}
         .avatar-wrap{width:56px;height:56px;display:inline-flex;align-items:center;justify-content:center}
         .member-role{font-size:0.9rem;color:var(--muted)}
 
         /* private users card styling */
-        .feature-card.private{background:linear-gradient(90deg, rgba(255,255,255,0.98), rgba(250,246,255,0.98))}
+        .feature-card.private{background:var(--private-bg)}
 
         @media(max-width:720px){.features-grid{grid-template-columns:1fr}}
         @media(max-width:420px){.features-grid{grid-template-columns:1fr;padding:0}}
@@ -134,6 +207,8 @@
                 <a href="Documents.html">帮助手册</a>
                 <a href="Thanks.html">感谢名单</a>
                 <button id="theme-toggle" class="nav-toggle" aria-label="切换主题"><i class="fas fa-moon"></i></button>
+                <button id="contrast-toggle" class="nav-toggle" aria-label="高对比">HC</button>
+                <button id="motion-toggle" class="nav-toggle" aria-label="动画开关">⭘</button>
             </div>
         </nav>
 
@@ -289,6 +364,20 @@
 
         document.addEventListener('DOMContentLoaded', ()=>{
             loadContributors();
+            // 使用 IntersectionObserver 来触发卡片入场动画，提升性能
+            (function(){
+                const observer = new IntersectionObserver((entries)=>{
+                    entries.forEach(e=>{
+                        if(e.isIntersecting){
+                            e.target.classList.add('in-view');
+                            observer.unobserve(e.target);
+                        }
+                    })
+                },{threshold:0.12});
+                // 延迟绑定，等待卡片被插入
+                const attach = ()=>{ const cards = document.querySelectorAll('.feature-card'); if(cards.length){ cards.forEach(c=>observer.observe(c)); } else setTimeout(attach, 120); };
+                attach();
+            })();
             // 主题切换初始化（Thanks 页面）
             (function(){
                 const toggle = document.getElementById('theme-toggle');
@@ -297,10 +386,20 @@
                 const stored = localStorage.getItem('theme');
                 const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
                 const initTheme = stored || (prefersDark ? 'dark' : 'light');
-                if(initTheme === 'dark') root.setAttribute('data-theme','dark');
+                function applyThemeFromPref(pref){
+                    if(!pref || pref === 'auto'){
+                        const sys = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                        root.setAttribute('data-theme', sys);
+                    } else {
+                        root.setAttribute('data-theme', pref);
+                    }
+                }
+                applyThemeFromPref(initTheme === 'auto' ? null : initTheme);
                 function updateIcon(){
-                    const isDark = root.getAttribute('data-theme') === 'dark';
-                    toggle.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
+                    const t = root.getAttribute('data-theme');
+                    if(t === 'dark') toggle.innerHTML = '<i class="fas fa-sun"></i>';
+                    else if(t === 'high-contrast') toggle.innerHTML = '<i class="fas fa-adjust"></i>';
+                    else toggle.innerHTML = '<i class="fas fa-moon"></i>';
                 }
                 toggle.addEventListener('click', ()=>{
                     const cur = root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
@@ -308,13 +407,59 @@
                     localStorage.setItem('theme', cur);
                     updateIcon();
                 });
+                const contrastBtn = document.getElementById('contrast-toggle');
+                if(contrastBtn){
+                    function updateContrastBtn(){
+                        const cur = localStorage.getItem('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light');
+                        if(cur === 'high-contrast'){ contrastBtn.innerHTML = '<i class="fas fa-adjust"></i>'; contrastBtn.setAttribute('aria-pressed','true'); }
+                        else { contrastBtn.innerHTML = '<i class="fas fa-eye"></i>'; contrastBtn.setAttribute('aria-pressed','false'); }
+                    }
+                    contrastBtn.addEventListener('click', ()=>{
+                        const current = localStorage.getItem('theme') || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light');
+                        const next = current === 'high-contrast' ? 'auto' : 'high-contrast';
+                        if(next === 'auto') localStorage.removeItem('theme'); else localStorage.setItem('theme', next);
+                        applyThemeFromPref(localStorage.getItem('theme') || null);
+                        updateIcon();
+                        updateContrastBtn();
+                    });
+                    updateContrastBtn();
+                }
+                const motionBtn = document.getElementById('motion-toggle');
+                function applyMotionPref(){
+                    const storedM = localStorage.getItem('reduceMotion');
+                    if(storedM === '1') document.documentElement.classList.add('reduced-motion');
+                    else if(storedM === '0') document.documentElement.classList.remove('reduced-motion');
+                    else {
+                        if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) document.documentElement.classList.add('reduced-motion');
+                    }
+                }
+                if(motionBtn){
+                    function updateMotionBtn(){
+                        const cur = localStorage.getItem('reduceMotion');
+                        if(cur === '1' || (cur === null && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches)){
+                            motionBtn.innerHTML = '<i class="fas fa-ban"></i>';
+                            motionBtn.setAttribute('aria-pressed','true');
+                        } else {
+                            motionBtn.innerHTML = '<i class="fas fa-bolt"></i>';
+                            motionBtn.setAttribute('aria-pressed','false');
+                        }
+                    }
+                    motionBtn.addEventListener('click', ()=>{
+                        const cur = localStorage.getItem('reduceMotion');
+                        if(cur === '1'){ localStorage.setItem('reduceMotion','0'); } else { localStorage.setItem('reduceMotion','1'); }
+                        applyMotionPref();
+                        updateMotionBtn();
+                    });
+                    updateMotionBtn();
+                }
+                applyMotionPref();
                 updateIcon();
             })();
         });
     </script>
     <!-- 大型感谢区 -->
     <section style="max-width:1180px;margin:40px auto 80px;padding:40px 22px;text-align:center;">
-        <div style="background:linear-gradient(90deg,#fff,#f7fbff);border-radius:14px;padding:40px 30px;box-shadow:0 20px 40px rgba(15,23,36,0.08);">
+        <div style="background:var(--thank-bg);border-radius:14px;padding:40px 30px;box-shadow:0 20px 40px rgba(15,23,36,0.08);">
             <h2 style="font-family:'SJ-Narrow','Poppins',sans-serif;font-size:48px;margin:0;color:var(--text-dark);letter-spacing:2px;">AND, THANK YOU</h2>
             <p style="font-size:20px;color:var(--muted);margin-top:12px;">感谢您的支持和参与</p>
         </div>
