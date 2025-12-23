@@ -9,6 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
     <!-- 优先使用 woff2，若无则回退到 ttf；font-display:swap 提升可见性 -->
+    <!-- 运行时长依赖（odometer） -->
+    <link rel="stylesheet" href="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/assets/odometer-theme-minimal.css">
+    <script src="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/js/build/libs/odometer.min.js"></script>
     <style>
         @font-face{
             font-family: 'SJ-Narrow';
@@ -136,6 +139,9 @@
             transition-duration: 0.001ms !important;
             scroll-behavior: auto !important;
         }
+        /* 运行时长小组件样式（固定右下） */
+        .runtime-widget{ position:fixed; right:18px; bottom:18px; z-index:11001; background:var(--card-bg); padding:10px 14px; border-radius:12px; box-shadow:var(--shadow-soft); font-size:13px; color:var(--text); display:flex; gap:8px; align-items:center; }
+        .runtime-widget .odometer{ font-weight:700; margin:0 4px; }
         html,body{height:100%;}
         body{margin:0;padding:0;font-family:'Poppins', 'Noto Sans SC', sans-serif;background:var(--bg);color:var(--text-dark);-webkit-font-smoothing:antialiased}
 
@@ -457,6 +463,39 @@
                 updateIcon();
             })();
         });
+    </script>
+    <!-- 运行时长小组件 -->
+    <div class="runtime-widget" role="note" aria-label="网站运行时长">
+        <span>运行:</span>
+        <span id="runtime_days" class="odometer">0</span>
+        <span>d</span>
+        <span id="runtime_hours" class="odometer">0</span>
+        <span>h</span>
+        <span id="runtime_minutes" class="odometer">0</span>
+        <span>m</span>
+        <span id="runtime_seconds" class="odometer">0</span>
+        <span>s</span>
+    </div>
+
+    <script>
+        // 运行时长统计脚本（Thanks 页面）
+        (function(){
+            const blogStartDate = new Date(2025,9,28,0,0,0);
+            function odometer_init(){
+                document.querySelectorAll('.odometer').forEach(e=>{ try{ new Odometer({ el: e, format: '(ddd)', duration: 200 }); }catch(err){} });
+            }
+            function updateRuntime(){
+                const now = new Date(); const diff = now - blogStartDate;
+                const seconds = Math.floor((diff/1000)%60);
+                const minutes = Math.floor((diff/(1000*60))%60);
+                const hours = Math.floor((diff/(1000*60*60))%24);
+                const days = Math.floor(diff/(1000*60*60*24));
+                const d = document.getElementById('runtime_days'); const h = document.getElementById('runtime_hours');
+                const m = document.getElementById('runtime_minutes'); const s = document.getElementById('runtime_seconds');
+                if(d) d.innerText = days; if(h) h.innerText = hours; if(m) m.innerText = minutes; if(s) s.innerText = seconds;
+            }
+            document.addEventListener('DOMContentLoaded', ()=>{ odometer_init(); updateRuntime(); setInterval(updateRuntime, 1000); });
+        })();
     </script>
     <!-- 大型感谢区 -->
     <section style="max-width:1180px;margin:40px auto 80px;padding:40px 22px;text-align:center;">

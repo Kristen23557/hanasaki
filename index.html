@@ -878,6 +878,10 @@
     </style>
 </head>
 <body>
+    <!-- 预加载动画（页面首屏预加载） -->
+    <div class="preloader" id="preloader" role="status" aria-label="页面加载中">
+        <h2 class="ml13">Stable Connection CREATED</h2>
+    </div>
     <!-- 装饰性浮动控件：回到顶部 & 脉冲心 -->
     <button id="back-to-top" title="回到顶部" style="display:none;">↑</button>
     <div id="floating-heart" aria-hidden="true"></div>
@@ -1291,5 +1295,76 @@
             document.addEventListener('DOMContentLoaded', ()=>{ loadChangeLog(); if(location.hash==='#changelog') setTimeout(()=>{ const el=document.getElementById('changelog'); el && el.scrollIntoView({behavior:'auto'}); },200); });
         })();
     </script>
+    <!-- 预加载与运行时长脚本 -->
+    <script>
+        // ===================== 预加载动画逻辑（index 页面） =====================
+        (function(){
+            try{
+                var textWrapper = document.querySelector('.preloader .ml13');
+                if(textWrapper){
+                    var words = textWrapper.textContent.trim().split(' ');
+                    textWrapper.innerHTML = '';
+                    words.forEach(function(word){
+                        var wordSpan = document.createElement('span'); wordSpan.className='word';
+                        wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
+                        textWrapper.appendChild(wordSpan); textWrapper.appendChild(document.createTextNode(' '));
+                    });
+
+                    var animation = anime.timeline({ loop: false })
+                    .add({
+                        targets: '.preloader .letter',
+                        translateY: [20,0],
+                        translateZ: 0,
+                        opacity: [0,1],
+                        easing: 'easeOutExpo',
+                        duration: 900,
+                        delay: (el,i)=> 200 + 20*i
+                    });
+                }
+            }catch(e){console.error(e)}
+
+            // 隐藏 preloader 的兜底逻辑
+            function hidePreloader(){
+                var el = document.getElementById('preloader'); if(!el) return;
+                el.style.opacity = '0';
+                setTimeout(function(){ el.style.display='none'; }, 400);
+            }
+            window.addEventListener('load', function(){ setTimeout(hidePreloader, 900); });
+            // 10s 兜底
+            setTimeout(hidePreloader, 10000);
+        })();
+
+        // ===================== 运行时长统计（shared） =====================
+        (function(){
+            const blogStartDate = new Date(2025,9,28,0,0,0); // 起始日期
+            function odometer_init(){
+                document.querySelectorAll('.odometer').forEach(e=>{ try{ new Odometer({ el: e, format: '(ddd)', duration: 200 }); }catch(err){} });
+            }
+            function updateRuntime(){
+                const now = new Date(); const diff = now - blogStartDate;
+                const seconds = Math.floor((diff/1000)%60);
+                const minutes = Math.floor((diff/(1000*60))%60);
+                const hours = Math.floor((diff/(1000*60*60))%24);
+                const days = Math.floor(diff/(1000*60*60*24));
+                const d = document.getElementById('runtime_days'); const h = document.getElementById('runtime_hours');
+                const m = document.getElementById('runtime_minutes'); const s = document.getElementById('runtime_seconds');
+                if(d) d.innerText = days; if(h) h.innerText = hours; if(m) m.innerText = minutes; if(s) s.innerText = seconds;
+            }
+            document.addEventListener('DOMContentLoaded', ()=>{ odometer_init(); updateRuntime(); setInterval(updateRuntime, 1000); });
+        })();
+    </script>
+
+    <!-- 运行时长小组件（固定右下） -->
+    <div class="runtime-widget" role="note" aria-label="网站运行时长">
+        <span>运行:</span>
+        <span id="runtime_days" class="odometer">0</span>
+        <span>d</span>
+        <span id="runtime_hours" class="odometer">0</span>
+        <span>h</span>
+        <span id="runtime_minutes" class="odometer">0</span>
+        <span>m</span>
+        <span id="runtime_seconds" class="odometer">0</span>
+        <span>s</span>
+    </div>
 </body>
 </html>
