@@ -8,6 +8,17 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script>
+        // 在 CSS 之前设置主题，避免初始闪烁
+        (function(){
+            try{
+                var stored = localStorage.getItem('theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var use = stored || (prefersDark ? 'dark' : 'light');
+                if(use === 'dark') document.documentElement.setAttribute('data-theme','dark');
+            }catch(e){}
+        })();
+    </script>
     <style>
         /* 引入本地 SJ-Narrow 字体：Light 与 Regular */
         @font-face{
@@ -24,19 +35,6 @@
             font-style: normal;
             font-display: swap;
         }
-        /* 暗色主题覆盖（Thanks 页面） */
-        [data-theme="dark"]{
-            --primary-blue: #5a86b8;
-            --accent-pink: #ff85a8;
-            --mint: #27b16b;
-            --gold: #f0c24a;
-            --bg: linear-gradient(180deg,#07101a 0%, #04111a 100%);
-            --card-bg: rgba(10,14,20,0.75);
-            --muted: #9fb0c8;
-            --text-dark: #eaf3ff;
-            --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
-            --shadow-strong: 0 30px 70px rgba(0,0,0,0.7);
-        }
         :root{
             --primary-blue: #6a93c9;
             --accent-pink: #ff7aa2;
@@ -51,6 +49,20 @@
             --shadow-strong: 0 20px 50px rgba(15,23,36,0.12);
             --radius: 14px;
             --transition: 300ms cubic-bezier(.2,.9,.2,1);
+        }
+
+        /* 暗色主题覆盖（放在 :root 之后以确保覆盖默认变量） */
+        :root[data-theme="dark"]{
+            --primary-blue: #5a86b8;
+            --accent-pink: #ff85a8;
+            --mint: #27b16b;
+            --gold: #f0c24a;
+            --bg: linear-gradient(180deg,#07101a 0%, #04111a 100%);
+            --card-bg: rgba(10,14,20,0.75);
+            --muted: #9fb0c8;
+            --text-dark: #eaf3ff;
+            --shadow-soft: 0 10px 30px rgba(0,0,0,0.6);
+            --shadow-strong: 0 30px 70px rgba(0,0,0,0.7);
         }
         html,body{height:100%;}
         body{margin:0;padding:0;font-family:'Poppins', 'Noto Sans SC', sans-serif;background:var(--bg);color:var(--text-dark);-webkit-font-smoothing:antialiased}
@@ -112,6 +124,9 @@
     </style>
 </head>
 <body>
+    <!-- 装饰性浮动控件：回到顶部 & 脉冲心 -->
+    <button id="back-to-top" title="回到顶部" style="display:none;">↑</button>
+    <div id="floating-heart" aria-hidden="true"></div>
     <div class="content-wrapper">
         <nav class="top-nav">
             <div><a href="index.html"> 返回首页</a></div>

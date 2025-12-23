@@ -3,29 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>花咲一秋 - QQ机器人</title>
+    <title>花咲一秋</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script>
+        // 在 CSS 之前设置主题属性，避免闪烁
+        (function(){
+            try{
+                var stored = localStorage.getItem('theme');
+                var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var use = stored || (prefersDark ? 'dark' : 'light');
+                if(use === 'dark') document.documentElement.setAttribute('data-theme','dark');
+            }catch(e){}
+        })();
+    </script>
     <style>
-        /* 暗色主题覆盖 */
-        [data-theme="dark"]{
-            --primary-blue: #5480b8;
-            --light-blue: #3b5f8a;
-            --dark-blue: #0e2a3f;
-            --yellow-accent: #f6c85f;
-            --yellow-light: #f7d67a;
-            --gray-bg: #0b1220;
-            --gray-dark: #e6eefc;
-            --text-light: #e6eefc;
-            --text-dark: #e6eefc;
-            --text-medium: #b9c6d6;
-            --card-bg: rgba(10,16,24,0.7);
-            --shadow: 0 10px 30px rgba(0,0,0,0.6);
-            --shadow-hover: 0 18px 50px rgba(0,0,0,0.7);
-            background-color: #05060a;
-        }
         /* 引入本地 SJ-Narrow 字体（Regular / Light）供标题与强调使用 */
         @font-face{
             font-family: 'SJ-Narrow';
@@ -62,6 +56,24 @@
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             --shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.12);
             --transition: all 0.3s ease;
+        }
+
+        /* 暗色主题覆盖（放在 :root 之后以确保覆盖默认变量） */
+        :root[data-theme="dark"]{
+            --primary-blue: #5480b8;
+            --light-blue: #3b5f8a;
+            --dark-blue: #0e2a3f;
+            --yellow-accent: #f6c85f;
+            --yellow-light: #f7d67a;
+            --gray-bg: #0b1220;
+            --gray-dark: #e6eefc;
+            --text-light: #e6eefc;
+            --text-dark: #e6eefc;
+            --text-medium: #b9c6d6;
+            --card-bg: rgba(10,16,24,0.7);
+            --shadow: 0 10px 30px rgba(0,0,0,0.6);
+            --shadow-hover: 0 18px 50px rgba(0,0,0,0.7);
+            background-color: #05060a;
         }
 
         body {
@@ -709,6 +721,9 @@
     </style>
 </head>
 <body>
+    <!-- 装饰性浮动控件：回到顶部 & 脉冲心 -->
+    <button id="back-to-top" title="回到顶部" style="display:none;">↑</button>
+    <div id="floating-heart" aria-hidden="true"></div>
     <!-- 顶部导航栏 -->
     <div class="content-wrapper" style="padding-top:18px;">
         <nav class="top-nav" aria-label="主导航">
@@ -919,6 +934,24 @@
                 updateIcon();
             });
             updateIcon();
+        })();
+
+        // 回到顶部 & 浮动心样式逻辑
+        (function(){
+            const btn = document.getElementById('back-to-top');
+            const heart = document.getElementById('floating-heart');
+            if(btn){
+                btn.style.cssText = 'position:fixed;right:20px;bottom:24px;width:48px;height:48px;border-radius:12px;border:none;background:var(--primary-blue);color:#fff;font-size:20px;cursor:pointer;box-shadow:0 12px 30px rgba(0,0,0,0.18);z-index:999;';
+                window.addEventListener('scroll', ()=>{ btn.style.display = window.scrollY>200 ? 'block' : 'none'; });
+                btn.addEventListener('click', ()=> window.scrollTo({top:0,behavior:'smooth'}));
+            }
+            if(heart){
+                heart.style.cssText = 'position:fixed;left:24px;bottom:24px;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--accent-pink),var(--primary-blue));box-shadow:0 12px 40px rgba(106,147,201,0.18);z-index:998;animation:heartPulse 1500ms infinite;cursor:pointer;';
+                heart.addEventListener('click', ()=>{
+                    heart.animate([{transform:'scale(1)'},{transform:'scale(1.2)'},{transform:'scale(1)'}],{duration:420});
+                });
+            }
+            const s = document.createElement('style'); s.textContent='@keyframes heartPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}'; document.head.appendChild(s);
         })();
     </script>
 </body>
