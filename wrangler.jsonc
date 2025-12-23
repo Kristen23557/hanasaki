@@ -1,30 +1,11 @@
 {
-  // 自定义 Worker 项目名称（需唯一）
-  "name": "hanasaki",
-  // 兼容日期（填当前日期即可）
-  "compatibility_date": "2025-12-23",
-  // Worker 脚本入口文件路径
-  "main": "src/index.ts",
-  // 配置要部署的静态资产（HTML、图片等）
-  "assets": [
-    {
-      "directory": "./", // 静态资源所在目录（你的项目根目录）
-      "include": [
-        "*.html",         // 包含所有 HTML 文件
-        "pictures/**"     // 包含 pictures 文件夹下的所有资源（比如头像图片）
-      ],
-      "exclude": [
-        "fonts/**",       // 若不需要部署字体，可保留；需要则删除这行
-        "src/**"          // 排除 Worker 脚本目录（避免重复部署）
-      ]
-    }
-  ],
-  // 将静态资产绑定到 Worker 的环境变量（方便脚本读取）
-  "bindings": {
-    "ASSETS": {
-      "type": "assets",
-      "directory": "./",
-      "include": ["*.html", "pictures/**"]
-    }
+  "name": "hanasaki", // 自定义 Worker 名称（唯一）
+  "compatibility_date": "2025-12-23", // 兼容日期（保持当前日期）
+  "main": "src/index.ts", // Worker 脚本入口（必填）
+  // 静态资产配置：Wrangler 4.x 要求为单层对象，仅保留必填的 directory
+  "assets": {
+    "directory": "./", // 静态资源根目录（你的项目根目录，必填）
+    "include": ["*.html", "pictures/**"], // 要部署的文件/文件夹
+    "exclude": ["src/**", "node_modules/**"] // 排除不需要部署的目录
   }
 }
