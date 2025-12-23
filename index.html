@@ -33,8 +33,11 @@
         /* Preloader & runtime widget styles (adapted) */
         :root{ --preloader-background-color: var(--card-bg); --preloader-text-color: var(--text-dark); }
         @media (prefers-color-scheme: dark){ :root{ --preloader-background-color:#071018; --preloader-text-color:var(--text-light); } }
-        .preloader{ display:flex;flex-direction:column;gap:1rem;align-items:center;justify-content:center;position:fixed;padding:12px;top:0;right:0;bottom:0;left:0;width:100vw;height:100vh;background-color:var(--preloader-background-color);z-index:11000;transition:opacity .2s ease-in-out }
-        .preloader .ml13{ font-size:2.6rem;color:var(--preloader-text-color);letter-spacing:-1px;font-weight:500;font-family:'SJ-Narrow','Poppins',sans-serif;text-align:center }
+        .preloader{ display:flex;flex-direction:column;gap:1rem;align-items:center;justify-content:center;position:fixed;padding:12px;top:0;right:0;bottom:0;left:0;width:100vw;height:100vh;background-color:var(--preloader-background-color);z-index:11000;transition:opacity .45s ease-in-out !important }
+        /* 使用 微软雅黑 字体（用户指定） */
+        .preloader .ml13{ font-size:2.6rem;color:var(--preloader-text-color);letter-spacing:-1px;font-weight:500;font-family:'Microsoft YaHei','微软雅黑',sans-serif;text-align:center }
+        /* 如果 reduced-motion 被启用，仍要允许 preloader 的淡出过渡可见（覆盖全局 reduced-motion 规则） */
+        .reduced-motion .preloader{ transition:opacity .45s ease-in-out !important; }
         .preloader .word{ display:inline-flex;flex-wrap:wrap;white-space:nowrap }
         .preloader .letter{ display:inline-block;line-height:1em }
         /* 运行时长小组件，固定右下 */
@@ -1319,7 +1322,16 @@
                         easing: 'easeOutExpo',
                         duration: 900,
                         delay: (el,i)=> 200 + 20*i
-                    });
+                    })
+                    .add({
+                        targets: '.preloader .letter',
+                        translateY: [0, -20],
+                        opacity: [1, 0],
+                        easing: 'easeInExpo',
+                        duration: 900,
+                        delay: (el,i)=> 15 * i,
+                        complete: function(){ try{ hidePreloader(); }catch(e){} }
+                    }, '+=700');
                 }
             }catch(e){console.error(e)}
 
@@ -1355,7 +1367,7 @@
     </script>
 
     <!-- 运行时长小组件（固定右下） -->
-    <div class="runtime-widget" role="note" aria-label="网站运行时长">
+    <div class="runtime-widget" role="note" aria-label="花咲一秋项目运行了：">
         <span>运行:</span>
         <span id="runtime_days" class="odometer">0</span>
         <span>d</span>
