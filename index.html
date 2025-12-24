@@ -43,8 +43,16 @@
         .preloader .word{ display:inline-flex;flex-wrap:wrap;white-space:nowrap }
         .preloader .letter{ display:inline-block;line-height:1em }
         /* 运行时长小组件，固定右下 */
-        .runtime-widget{ position:fixed; right:18px; bottom:18px; z-index:11001; background:var(--card-bg); padding:10px 14px; border-radius:12px; box-shadow:var(--shadow); font-size:13px; color:var(--text); display:flex; gap:8px; align-items:center; }
-        .runtime-widget .odometer{ font-weight:700; margin:0 4px; }
+        /* 运行时长小组件（进度卡片） */
+        .runtime-widget{ position:fixed; right:18px; bottom:18px; z-index:11001; width:320px; border-radius:12px; box-shadow:var(--shadow); font-size:13px; color:var(--text); overflow:hidden; }
+        .runtime-widget .anniv-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); backdrop-filter: blur(2px); }
+        .runtime-widget .anniv-row .anniv-label{ font-weight:600; color:var(--muted); }
+        .runtime-widget .anniv-row .anniv-count{ font-weight:800; font-family:'Chillax-Regular','Chillax-Variable',sans-serif; }
+        .runtime-widget .progress-track{ position:relative; height:64px; background:var(--card-bg); }
+        .runtime-widget .progress-fill{ position:absolute; left:0; top:0; bottom:0; width:0%; transition:width 600ms linear; background:linear-gradient(90deg,var(--primary-blue),var(--light-blue)); }
+        .runtime-widget .progress-overlay{ position:relative; z-index:2; display:flex; align-items:center; justify-content:center; height:100%; padding:8px 12px; }
+        .runtime-widget .odometer{ font-weight:700; margin:0 6px; font-family:'Chillax-Semibold','Chillax-Regular',sans-serif; }
+        .runtime-widget .runtime-label{ color:var(--muted); font-size:12px; margin-right:8px; }
     </style>
     <script>
         // 在 CSS 之前设置主题属性，避免闪烁
@@ -1363,34 +1371,65 @@
         // ===================== 运行时长统计（shared） =====================
         (function(){
             const blogStartDate = new Date(2025,9,28,0,0,0); // 起始日期
-            function odometer_init(){
-                document.querySelectorAll('.odometer').forEach(e=>{ try{ new Odometer({ el: e, format: '(ddd)', duration: 200 }); }catch(err){} });
-            }
-            function updateRuntime(){
-                const now = new Date(); const diff = now - blogStartDate;
-                const seconds = Math.floor((diff/1000)%60);
-                const minutes = Math.floor((diff/(1000*60))%60);
-                const hours = Math.floor((diff/(1000*60*60))%24);
-                const days = Math.floor(diff/(1000*60*60*24));
-                const d = document.getElementById('runtime_days'); const h = document.getElementById('runtime_hours');
-                const m = document.getElementById('runtime_minutes'); const s = document.getElementById('runtime_seconds');
-                if(d) d.innerText = days; if(h) h.innerText = hours; if(m) m.innerText = minutes; if(s) s.innerText = seconds;
-            }
-            document.addEventListener('DOMContentLoaded', ()=>{ odometer_init(); updateRuntime(); setInterval(updateRuntime, 1000); });
+                function odometer_init(){
+                    document.querySelectorAll('.odometer').forEach(e=>{ try{ new Odometer({ el: e, format: '(ddd)', duration: 200 }); }catch(err){} });
+                }
+
+                function updateRuntimeAndAnniv(){
+                    const now = new Date(); const diff = now - blogStartDate;
+                    const seconds = Math.floor((diff/1000)%60);
+                    const minutes = Math.floor((diff/(1000*60))%60);
+                    const hours = Math.floor((diff/(1000*60*60))%24);
+                    const days = Math.floor(diff/(1000*60*60*24));
+                    const d = document.getElementById('runtime_days'); const h = document.getElementById('runtime_hours');
+                    const m = document.getElementById('runtime_minutes'); const s = document.getElementById('runtime_seconds');
+                    if(d) d.innerText = days; if(h) h.innerText = hours; if(m) m.innerText = minutes; if(s) s.innerText = seconds;
+
+                    // Anniversary progress: years passed since blogStartDate
+                    const start = new Date(blogStartDate.getTime());
+                    let years = now.getFullYear() - start.getFullYear();
+                    // compute last anniversary date
+                    let last = new Date(start.getTime()); last.setFullYear(start.getFullYear() + years);
+                    if(now < last){ years -= 1; last.setFullYear(start.getFullYear() + years); }
+                    const next = new Date(last.getTime()); next.setFullYear(last.getFullYear() + 1);
+                    // avoid negative
+                    const annivCount = Math.max(0, years);
+                    const annivEl = document.getElementById('anniv-count'); if(annivEl) annivEl.textContent = annivCount;
+                    const fillEl = document.getElementById('anniv-fill');
+                    if(fillEl){
+                        const total = next - last;
+                        const elapsed = now - last;
+                        const pct = total > 0 ? Math.max(0, Math.min(1, elapsed/total)) : 0;
+                        fillEl.style.width = (pct*100) + '%';
+                        // color cycle per year
+                        const colors = ['#6a93c9','#ffcc66','#8fd3ff','#ff99cc','#9be28f','#d6a4ff'];
+                        const color = colors[annivCount % colors.length];
+                        fillEl.style.background = color;
+                    }
+                }
+                document.addEventListener('DOMContentLoaded', ()=>{ odometer_init(); updateRuntimeAndAnniv(); setInterval(updateRuntimeAndAnniv, 1000); });
         })();
     </script>
 
     <!-- 运行时长小组件（固定右下） -->
-    <div class="runtime-widget" role="note" aria-label="花咲一秋项目运行了：">
-        <span>运行:</span>
-        <span id="runtime_days" class="odometer">0</span>
-        <span>d</span>
-        <span id="runtime_hours" class="odometer">0</span>
-        <span>h</span>
-        <span id="runtime_minutes" class="odometer">0</span>
-        <span>m</span>
-        <span id="runtime_seconds" class="odometer">0</span>
-        <span>s</span>
+    <div class="runtime-widget" role="note" aria-label="花咲一秋项目运行与周年进度">
+        <div class="anniv-row">
+            <div class="anniv-label">Anniversary             <span id="anniv-count">0</span></div>
+            <div class="anniv-year" aria-hidden="true"></div>
+        </div>
+        <div class="progress-track" aria-hidden="false">
+            <div class="progress-fill" id="anniv-fill" style="width:0%"></div>
+            <div class="progress-overlay">
+                <div style="text-align:center">
+                    <div><span class="runtime-label">花咲一秋已经存在了</span>
+                        <span id="runtime_days" class="odometer">0</span>d
+                        <span id="runtime_hours" class="odometer">0</span>h
+                        <span id="runtime_minutes" class="odometer">0</span>m
+                        <span id="runtime_seconds" class="odometer">0</span>s
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
