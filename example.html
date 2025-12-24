@@ -3,219 +3,755 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <title>预加载+运行时长示例</title>
-    <!-- 预加载动画依赖：anime.js -->
-    <script src="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/js/build/libs/anime.min.js"></script>
-    <!-- 运行时长统计依赖：odometer.js + 样式 -->
-    <script src="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/js/build/libs/odometer.min.js"></script>
-    <link rel="stylesheet" href="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/assets/odometer-theme-minimal.css">
-
-    <!-- 预加载动画样式 -->
+    <meta name="author" content="null-qwerty">
+    <!-- 引入原博客依赖的CDN资源（完整还原） -->
+    <link rel="stylesheet" href="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/css/build/tailwind.css">
+    <link rel="stylesheet" href="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/fonts/Geist/geist.css">
+    <link rel="stylesheet" href="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/fonts/Chillax/chillax.css">
+    <!-- Font Awesome 完整引入（含自定义动画类） -->
+    <link rel="stylesheet" href="https://registry.npmmirror.com/@fortawesome/font-awesome-free/6.4.0/css/all.min.css">
     <style>
+        /* 1. 补全原博客核心自定义样式类（Redefine主题） */
         :root {
             --preloader-background-color: #fff;
-            --preloader-text-color: #000
+            --preloader-text-color: #000;
+            --scroll-percent-color: var(--primary-color);
+            --tool-hover-scale: 1.08;
+            --transition-base: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --preloader-background-color:#202124;
-                --preloader-text-color: #fff
-            }
+        :root[data-theme=dark] {
+            --background-color: #202124;
+            --background-color-transparent: rgba(32, 33, 36, 0.6);
+            --background-color-transparent-80: rgba(32, 33, 36, 0.8);
+            --background-color-transparent-15: rgba(32, 33, 36, 0.15);
+            --second-background-color: #2d2e32;
+            --third-background-color: #34353a;
+            --primary-color: #0066CC;
+            --first-text-color: #ffffff;
+            --second-text-color: #eeeeee;
+            --third-text-color: #bebec6;
+            --default-text-color: #bebec6;
+            --border-color: rgba(255, 255, 255, 0.08);
+            --shadow-redefine-flat: 0 4px 12px rgba(255, 255, 255, 0.05);
+            --shadow-redefine-flat-hover: 0 6px 16px rgba(255, 255, 255, 0.1);
         }
 
-        @media (prefers-color-scheme: light) {
-            :root {
-                --preloader-background-color:#fff;
-                --preloader-text-color: #000
-            }
+        :root[data-theme=light] {
+            --background-color: #fff;
+            --background-color-transparent: rgba(255, 255, 255, 0.6);
+            --background-color-transparent-80: rgba(255, 255, 255, 0.8);
+            --background-color-transparent-15: rgba(255, 255, 255, 0.15);
+            --second-background-color: #f8f8f8;
+            --third-background-color: #f2f2f2;
+            --primary-color: #0066CC;
+            --first-text-color: #16171a;
+            --second-text-color: #2f3037;
+            --third-text-color: #5e5e5e;
+            --default-text-color: #373D3F;
+            --border-color: rgba(0, 0, 0, 0.08);
+            --shadow-redefine-flat: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-redefine-flat-hover: 0 6px 16px rgba(0, 0, 0, 0.1);
         }
 
-        @media (max-width: 600px) {
-            .ml13 {
-                font-size:2.6rem!important
-            }
+        /* 全局重置 + 基础样式（对齐原博客） */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Geist, Chillax, system-ui, -apple-system, sans-serif;
         }
 
-        .preloader {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            align-items: center;
-            justify-content: center;
-            position: fixed;
-            padding: 12px;
+        body {
+            background-color: var(--background-color);
+            color: var(--default-text-color);
+            min-height: 200vh; /* 测试滚动 */
+            line-height: 1.5;
+            font-size: 16px;
+            transition: var(--transition-base);
+        }
+
+        /* 2. 补全原博客过渡/动画类 */
+        .transition-fade {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .transition-fade-down {
+            transition: opacity 0.6s ease, transform 0.6s ease;
+            transform: translateY(20px);
+            opacity: 0;
+        }
+        .transition-fade-down.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .transition-fade-up {
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .transition-navbar {
+            transition: background-color 0.3s ease, padding 0.3s ease, box-shadow 0.3s ease;
+        }
+        .transition-transform {
+            transition: transform 0.3s ease;
+        }
+        .fa-spin-reverse {
+            animation: fa-spin 2s linear reverse infinite;
+        }
+
+        /* 3. 导航栏样式（1:1 还原原博客） */
+        .navbar-container {
+            position: sticky;
             top: 0;
-            right: 0;
+            z-index: 1000;
+            width: 100%;
+            background-color: var(--background-color-transparent-80);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-redefine-flat);
+            transition: var(--transition-navbar);
+        }
+        /* 导航栏滚动收缩效果 */
+        .navbar-container.shrink {
+            padding: 0.25rem 0;
+            box-shadow: var(--shadow-redefine-flat-hover);
+        }
+        .navbar-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .logo-title h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--first-text-color);
+            transition: var(--transition-fast);
+        }
+        .logo-title h1:hover {
+            color: var(--primary-color);
+        }
+
+        /* 桌面端导航 */
+        .desktop .navbar-list {
+            display: flex;
+            list-style: none;
+            gap: 1.5rem;
+        }
+        .navbar-item a {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--third-text-color);
+            text-decoration: none;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: var(--transition-fast);
+            font-weight: 400;
+        }
+        .navbar-item a::after {
+            content: '';
+            position: absolute;
             bottom: 0;
             left: 0;
-            width: 100vw;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary-color);
+            transition: width 0.3s ease;
+        }
+        .navbar-item a.active,
+        .navbar-item a:hover {
+            color: var(--primary-color);
+        }
+        .navbar-item a.active::after,
+        .navbar-item a:hover::after {
+            width: 100%;
+        }
+
+        /* 移动端导航 */
+        .mobile {
+            display: none;
+            align-items: center;
+            gap: 1rem;
+        }
+        .icon-item {
+            color: var(--third-text-color);
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: var(--transition-fast);
+            padding: 0.5rem;
+            border-radius: 50%;
+        }
+        .icon-item:hover {
+            color: var(--primary-color);
+            background-color: var(--background-color-transparent-15);
+        }
+
+        /* 导航抽屉（带动画） */
+        .navbar-drawer {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            max-width: 320px;
             height: 100vh;
-            background-color: var(--preloader-background-color);
-            z-index: 1100;
-            transition: opacity .2s ease-in-out
+            background-color: var(--background-color);
+            z-index: 1001;
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 2rem 1.5rem;
+            overflow-y: auto;
+            box-shadow: var(--shadow-redefine-flat-hover);
+        }
+        .navbar-drawer.open {
+            left: 0;
+        }
+        .drawer-navbar-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .drawer-navbar-item a {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--third-text-color);
+            text-decoration: none;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            transition: var(--transition-fast);
+            font-size: 1.1rem;
+        }
+        .drawer-navbar-item a:hover,
+        .drawer-navbar-item a.active {
+            color: var(--primary-color);
+            background-color: var(--background-color-transparent-15);
+            border-color: var(--border-color);
         }
 
-        .ml13 {
-            font-size: 3.2rem;
-            color: var(--preloader-text-color);
-            letter-spacing: -1px;
-            font-weight: 500;
-            font-family: sans-serif;
-            text-align: center
+        /* 遮罩层（带过渡） */
+        .window-mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .window-mask.show {
+            opacity: 1;
+            pointer-events: all;
         }
 
-        .ml13 .word {
+        /* 4. 右下角工具栏（1:1 还原原博客动态效果） */
+        .right-side-tools-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 999;
+        }
+        .side-tools-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .right-bottom-tools {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            background-color: var(--background-color-transparent-80);
+            backdrop-filter: blur(8px);
+            border: 1px solid var(--border-color);
             display: inline-flex;
-            flex-wrap: wrap;
-            white-space: nowrap
+            align-items: center;
+            justify-content: center;
+            color: var(--third-text-color);
+            cursor: pointer;
+            box-shadow: var(--shadow-redefine-flat);
+            transition: var(--transition-fast);
+            position: relative;
+            overflow: hidden;
+        }
+        .right-bottom-tools:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: scale(var(--tool-hover-scale));
+            box-shadow: var(--shadow-redefine-flat-hover);
+        }
+        /* 工具列表展开/收起动画 */
+        .hidden-tools-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .hidden-tools-list.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: all;
+        }
+        /* 滚动百分比样式 */
+        .tool-scroll-to-top .percent {
+            position: absolute;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: inherit;
+            transition: var(--transition-fast);
+        }
+        .tool-scroll-to-top:hover .percent {
+            color: white;
         }
 
-        .ml13 .letter {
-            display: inline-block;
-            line-height: 1em
+        /* 响应式适配（对齐原博客断点） */
+        @media (max-width: 768px) {
+            .desktop {
+                display: none;
+            }
+            .mobile {
+                display: flex;
+            }
+            .right-side-tools-container {
+                bottom: 1.5rem;
+                right: 1.5rem;
+            }
+            .right-bottom-tools {
+                width: 2.75rem;
+                height: 2.75rem;
+            }
         }
 
-        /* 运行时长统计样式（可选） */
-        .runtime-container {
-            text-align: center;
-            padding: 50px 0;
-            font-size: 18px;
-            color: #333;
-            background-color: #f5f5f5;
-            margin-top: 50px;
-        }
-        .dark .runtime-container {
-            color: #eee;
-            background-color: #222;
+        @media (max-width: 640px) {
+            .navbar-content {
+                padding: 0.75rem 1rem;
+            }
+            .navbar-drawer {
+                max-width: 85%;
+            }
         }
     </style>
+
+    <!-- 引入原博客动画库（完整） -->
+    <script src="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/js/build/libs/anime.min.js"></script>
+    <title>导航栏+工具栏（还原动态效果）</title>
 </head>
 <body>
-    <!-- 预加载动画 HTML -->
-    <div class="preloader">
-        <h2 class="ml13">[HANASAKI] CONNECTED</h2>
+    <!-- 导航栏核心模块（保留原结构） -->
+    <header class="navbar-container" id="navbarContainer">
+        <div class="navbar-content transition-navbar has-home-banner">
+            <div class="left">
+                <a class="logo-title" href="/">
+                    <h1>null-qwerty 's blog</h1>
+                </a>
+            </div>
+            <div class="right">
+                <!-- 桌面端导航 -->
+                <div class="desktop">
+                    <ul class="navbar-list">
+                        <li class="navbar-item">
+                            <a class="active" href="/">
+                                <i class="fa-regular fa-house fa-fw"></i>
+                                首页
+                            </a>
+                        </li>
+                        <li class="navbar-item">
+                            <a href="/archives">
+                                <i class="fa-regular fa-archive fa-fw"></i>
+                                归档
+                            </a>
+                        </li>
+                        <li class="navbar-item">
+                            <a href="/tags/">
+                                <i class="fa-regular fa-tags fa-fw"></i>
+                                标签
+                            </a>
+                        </li>
+                        <li class="navbar-item">
+                            <a target="_blank" rel="noopener" href="https://status.null-qwerty.work/">
+                                <i class="fa-regular fa-chart-bar fa-fw"></i>
+                                状态
+                            </a>
+                        </li>
+                        <li class="navbar-item">
+                            <a href="/bookmarks/">
+                                <i class="fa-solid fa-bookmark fa-fw"></i>
+                                BOOKMARKS
+                            </a>
+                        </li>
+                        <li class="navbar-item">
+                            <a href="/links">
+                                <i class="fa-regular fa-link fa-fw"></i>
+                                友情链接
+                            </a>
+                        </li>
+                        <li class="navbar-item search search-popup-trigger">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </li>
+                    </ul>
+                </div>
+                <!-- 移动端导航 -->
+                <div class="mobile">
+                    <div class="icon-item search search-popup-trigger">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </div>
+                    <div class="icon-item navbar-bar" id="navbarBar">
+                        <i class="fa-solid fa-bars"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 移动端导航抽屉 -->
+        <div class="navbar-drawer" id="navbarDrawer">
+            <ul class="drawer-navbar-list flex flex-col px-4 justify-center items-start">
+                <li class="drawer-navbar-item">
+                    <a class="active" href="/">
+                        <span>首页 </span>
+                        <i class="fa-regular fa-house fa-sm fa-fw"></i>
+                    </a>
+                </li>
+                <li class="drawer-navbar-item">
+                    <a href="/archives">
+                        <span>归档 </span>
+                        <i class="fa-regular fa-archive fa-sm fa-fw"></i>
+                    </a>
+                </li>
+                <li class="drawer-navbar-item">
+                    <a href="/tags/">
+                        <span>标签 </span>
+                        <i class="fa-regular fa-tags fa-sm fa-fw"></i>
+                    </a>
+                </li>
+                <li class="drawer-navbar-item">
+                    <a target="_blank" rel="noopener" href="https://status.null-qwerty.work/">
+                        <span>状态 </span>
+                        <i class="fa-regular fa-chart-bar fa-sm fa-fw"></i>
+                    </a>
+                </li>
+                <li class="drawer-navbar-item">
+                    <a href="/bookmarks/">
+                        <span>BOOKMARKS </span>
+                        <i class="fa-solid fa-bookmark fa-sm fa-fw"></i>
+                    </a>
+                </li>
+                <li class="drawer-navbar-item">
+                    <a href="/links">
+                        <span>友情链接 </span>
+                        <i class="fa-regular fa-link fa-sm fa-fw"></i>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <!-- 遮罩层 -->
+        <div class="window-mask" id="windowMask"></div>
+    </header>
+
+    <!-- 右下角工具栏核心模块（保留原结构） -->
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+            <!-- 隐藏的工具列表 -->
+            <ul class="hidden-tools-list" id="hiddenToolsList">
+                <li class="right-bottom-tools tool-font-adjust-plus" title="放大字体">
+                    <i class="fa-regular fa-magnifying-glass-plus"></i>
+                </li>
+                <li class="right-bottom-tools tool-font-adjust-minus" title="缩小字体">
+                    <i class="fa-regular fa-magnifying-glass-minus"></i>
+                </li>
+                <li class="right-bottom-tools tool-dark-light-toggle" title="切换明暗主题">
+                    <i class="fa-regular fa-moon" id="themeIcon"></i>
+                </li>
+                <li class="right-bottom-tools tool-scroll-to-bottom" title="滚动到底部">
+                    <i class="fa-regular fa-arrow-down"></i>
+                </li>
+            </ul>
+            <!-- 可见的工具列表 -->
+            <ul class="visible-tools-list">
+                <li class="right-bottom-tools toggle-tools-list" title="展开/收起工具" id="toggleToolsBtn">
+                    <i class="fa-regular fa-cog fa-spin" id="gearIcon"></i>
+                </li>
+                <li class="right-bottom-tools tool-scroll-to-top" title="回到顶部" id="scrollToTopBtn">
+                    <i class="arrow-up fas fa-arrow-up"></i>
+                    <span class="percent" id="scrollPercent">0%</span>
+                </li>
+            </ul>
+        </div>
     </div>
 
-    <!-- 页面运行时长统计 HTML -->
-    <div class="runtime-container">
-        花咲一秋项目运行了：
-        <span class="odometer" id="runtime_days"></span> 天 
-        <span class="odometer" id="runtime_hours"></span> 小时 
-        <span class="odometer" id="runtime_minutes"></span> 分钟 
-        <span class="odometer" id="runtime_seconds"></span> 秒
-    </div>
-
+    <!-- 核心交互脚本（还原原博客所有动态逻辑） -->
     <script>
-        // ===================== 预加载动画逻辑 =====================
-        (function() {
-            var textWrapper = document.querySelector('.ml13');
-            // 拆分文字为单词
-            var words = textWrapper.textContent.trim().split(' ');
-            // 清空原有内容
-            textWrapper.innerHTML = '';
-            // 为每个单词和字母包裹span
-            words.forEach(function(word) {
-                var wordSpan = document.createElement('span');
-                wordSpan.classList.add('word');
-                wordSpan.innerHTML = word.replace(/\S/g, "<span class='letter'>$&</span>");
-                textWrapper.appendChild(wordSpan);
-                textWrapper.appendChild(document.createTextNode(' '));
-            });
+        // ========== 1. 主题切换逻辑（1:1 还原） ==========
+        const THEME_KEY = "REDEFINE-THEME-STATUS";
+        const root = document.documentElement;
+        const themeIcon = document.getElementById("themeIcon");
+        const gearIcon = document.getElementById("gearIcon");
 
-            // 字母动画
-            var animation = anime.timeline({
-                loop: true
-            }).add({
-                targets: '.ml13 .letter',
-                translateY: [20, 0],
-                translateZ: 0,
-                opacity: [0, 1],
-                filter: ['blur(5px)', 'blur(0px)'],
-                easing: "easeOutExpo",
-                duration: 1200,
-                delay: (el, i) => 300 + 20 * i,
-            }).add({
-                targets: '.ml13 .letter',
-                translateY: [0, -20],
-                opacity: [1, 0],
-                filter: ['blur(0px)', 'blur(5px)'],
-                easing: "easeInExpo",
-                duration: 1000,
-                delay: (el, i) => 15 * i,
-                complete: function() {
-                    hidePreloader();
+        // 初始化主题
+        function initTheme() {
+            let isDark = false;
+            try {
+                const themeStatus = JSON.parse(localStorage.getItem(THEME_KEY));
+                if (themeStatus?.isDark !== undefined) {
+                    isDark = themeStatus.isDark;
+                } else {
+                    isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
                 }
-            }, '-=700');
-
-            // 适配深色/浅色模式
-            let themeStatus = JSON.parse(localStorage.getItem('REDEFINE-THEME-STATUS'))?.isDark;
-            if (themeStatus === undefined || themeStatus === null) {
-                themeStatus = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            } catch (e) {
+                isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
             }
-            if (themeStatus) {
-                document.documentElement.style.setProperty('--preloader-background-color', '#202124');
-                document.documentElement.style.setProperty('--preloader-text-color', '#fff');
-                document.documentElement.classList.add('dark');
-            } else {
-                document.documentElement.style.setProperty('--preloader-background-color', '#fff');
-                document.documentElement.style.setProperty('--preloader-text-color', '#000');
-            }
+            updateTheme(isDark);
+        }
 
-            // 页面加载完成后隐藏预加载（兜底）
-            window.addEventListener('load', function() {
-                setTimeout(hidePreloader, 5000);
+        // 更新主题样式（带过渡动画）
+        function updateTheme(isDark) {
+            const theme = isDark ? "dark" : "light";
+            // 主题切换过渡动画（原博客逻辑）
+            anime({
+                targets: root,
+                opacity: [0.9, 1],
+                duration: 300,
+                easing: "easeOutExpo"
             });
+            // 更新主题属性
+            root.setAttribute("data-theme", theme);
+            root.classList.add(theme);
+            root.classList.remove(isDark ? "light" : "dark");
+            root.style.colorScheme = theme;
+            // 更新图标
+            themeIcon.className = isDark ? "fa-regular fa-sun fa-fw" : "fa-regular fa-moon fa-fw";
+            // 保存到本地存储
+            localStorage.setItem(THEME_KEY, JSON.stringify({ isDark }));
+        }
 
-            // 隐藏预加载动画
-            function hidePreloader() {
-                var preloader = document.querySelector('.preloader');
-                preloader.style.opacity = '0';
-                setTimeout(function() {
-                    preloader.style.display = 'none';
-                }, 200);
-            }
-        })();
+        // 主题切换按钮事件（带点击动画）
+        document.querySelector(".tool-dark-light-toggle").addEventListener("click", () => {
+            // 点击动画（原博客效果）
+            anime({
+                targets: themeIcon,
+                rotate: [0, 360],
+                duration: 500,
+                easing: "easeOutExpo"
+            });
+            const currentIsDark = root.getAttribute("data-theme") === "dark";
+            updateTheme(!currentIsDark);
+        });
 
-        // ===================== 页面运行时长统计逻辑 =====================
-        (function() {
-            // 此处应改成起始日期
-            const blogStartDate = new Date(2025, 9, 28, 0, 0, 0); // YYYY/MM/DD HH:MM:SS
+        // ========== 2. 导航栏交互逻辑（含滚动收缩+抽屉动画） ==========
+        const navbarContainer = document.getElementById("navbarContainer");
+        const navbarBar = document.getElementById("navbarBar");
+        const navbarDrawer = document.getElementById("navbarDrawer");
+        const windowMask = document.getElementById("windowMask");
 
-            // 初始化odometer
-            function odometer_init() {
-                document.querySelectorAll(".odometer").forEach(e => {
-                    new Odometer({
-                        el: e,
-                        format: "( ddd).dd",
-                        duration: 200
-                    })
+        // 导航抽屉动画（使用anime.js还原原博客效果）
+        function toggleNavbarDrawer() {
+            const isOpen = navbarDrawer.classList.contains("open");
+            // 抽屉动画
+            if (!isOpen) {
+                navbarDrawer.classList.add("open");
+                windowMask.classList.add("show");
+                document.body.style.overflow = "hidden";
+                // 原博客抽屉展开动画
+                anime({
+                    targets: navbarDrawer,
+                    translateX: [-100, 0],
+                    opacity: [0, 1],
+                    duration: 300,
+                    easing: "easeOutExpo"
+                });
+            } else {
+                // 抽屉收起动画
+                anime({
+                    targets: navbarDrawer,
+                    translateX: [0, -100],
+                    opacity: [1, 0],
+                    duration: 250,
+                    easing: "easeInExpo",
+                    complete: () => {
+                        navbarDrawer.classList.remove("open");
+                        windowMask.classList.remove("show");
+                        document.body.style.overflow = "";
+                    }
                 });
             }
-            odometer_init();
+        }
 
-            // 计算运行时长
-            function updateRuntime() {
-                const now = new Date();
-                const diff = now - blogStartDate; // 毫秒差
+        navbarBar.addEventListener("click", toggleNavbarDrawer);
+        windowMask.addEventListener("click", toggleNavbarDrawer);
 
-                // 转换为天、时、分、秒
-                const seconds = Math.floor((diff / 1000) % 60);
-                const minutes = Math.floor((diff / (1000 * 60)) % 60);
-                const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-                // 更新显示
-                document.getElementById('runtime_days').innerText = days;
-                document.getElementById('runtime_hours').innerText = hours;
-                document.getElementById('runtime_minutes').innerText = minutes;
-                document.getElementById('runtime_seconds').innerText = seconds;
+        // 导航栏滚动收缩效果（原博客核心效果）
+        window.addEventListener("scroll", () => {
+            const scrollTop = window.scrollY;
+            if (scrollTop > 50) {
+                navbarContainer.classList.add("shrink");
+            } else {
+                navbarContainer.classList.remove("shrink");
             }
+            // 点击抽屉内链接关闭抽屉
+            document.querySelectorAll(".drawer-navbar-item a").forEach(link => {
+                link.addEventListener("click", () => {
+                    anime({
+                        targets: navbarDrawer,
+                        translateX: [0, -100],
+                        opacity: [1, 0],
+                        duration: 250,
+                        easing: "easeInExpo",
+                        complete: () => {
+                            navbarDrawer.classList.remove("open");
+                            windowMask.classList.remove("show");
+                            document.body.style.overflow = "";
+                        }
+                    });
+                });
+            });
+        });
 
-            // 初始化+每秒更新
-            updateRuntime();
-            setInterval(updateRuntime, 1000);
-        })();
+        // ========== 3. 工具栏交互逻辑（还原所有动态效果） ==========
+        const toggleToolsBtn = document.getElementById("toggleToolsBtn");
+        const hiddenToolsList = document.getElementById("hiddenToolsList");
+        const scrollToTopBtn = document.getElementById("scrollToTopBtn");
+        const scrollToBottomBtn = document.querySelector(".tool-scroll-to-bottom");
+        const scrollPercent = document.getElementById("scrollPercent");
+        const fontAdjustPlus = document.querySelector(".tool-font-adjust-plus");
+        const fontAdjustMinus = document.querySelector(".tool-font-adjust-minus");
+
+        // 齿轮旋转动画（原博客效果：hover加速）
+        let gearAnimation = anime({
+            targets: gearIcon,
+            rotate: 360,
+            duration: 4000,
+            easing: "linear",
+            loop: true,
+            autoplay: true
+        });
+        toggleToolsBtn.addEventListener("mouseenter", () => {
+            gearAnimation.duration = 1500; // hover加速
+        });
+        toggleToolsBtn.addEventListener("mouseleave", () => {
+            gearAnimation.duration = 4000; // 恢复原速度
+        });
+
+        // 展开/收起工具列表（带动画）
+        toggleToolsBtn.addEventListener("click", () => {
+            hiddenToolsList.classList.toggle("show");
+            // 点击动画（原博客效果）
+            anime({
+                targets: toggleToolsBtn,
+                rotate: hiddenToolsList.classList.contains("show") ? 90 : 0,
+                duration: 300,
+                easing: "easeOutExpo"
+            });
+        });
+
+        // 字体大小调整（带过渡）
+        let baseFontSize = 16;
+        fontAdjustPlus.addEventListener("click", () => {
+            baseFontSize = Math.min(baseFontSize + 2, 24);
+            // 字体缩放动画
+            anime({
+                targets: document.body,
+                fontSize: [`${baseFontSize - 2}px`, `${baseFontSize}px`],
+                duration: 200,
+                easing: "easeOutExpo"
+            });
+        });
+        fontAdjustMinus.addEventListener("click", () => {
+            baseFontSize = Math.max(baseFontSize - 2, 12);
+            anime({
+                targets: document.body,
+                fontSize: [`${baseFontSize + 2}px`, `${baseFontSize}px`],
+                duration: 200,
+                easing: "easeOutExpo"
+            });
+        });
+
+        // 滚动到顶部（带平滑动画）
+        scrollToTopBtn.addEventListener("click", () => {
+            // 滚动动画（原博客逻辑）
+            anime({
+                targets: window,
+                scrollTop: 0,
+                duration: 800,
+                easing: "easeOutExpo"
+            });
+            // 按钮点击动画
+            anime({
+                targets: scrollToTopBtn,
+                scale: [1, 1.2, 1],
+                duration: 500,
+                easing: "easeOutExpo"
+            });
+        });
+
+        // 滚动到底部（带平滑动画）
+        scrollToBottomBtn.addEventListener("click", () => {
+            anime({
+                targets: window,
+                scrollTop: document.body.scrollHeight,
+                duration: 800,
+                easing: "easeOutExpo"
+            });
+            // 按钮点击动画
+            anime({
+                targets: scrollToBottomBtn,
+                scale: [1, 1.2, 1],
+                duration: 500,
+                easing: "easeOutExpo"
+            });
+        });
+
+        // 实时更新滚动进度（带动画）
+        window.addEventListener("scroll", () => {
+            const scrollTop = window.scrollY;
+            const scrollHeight = document.body.scrollHeight - window.innerHeight;
+            const percent = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
+            // 进度数字动画（原博客效果）
+            anime({
+                targets: scrollPercent,
+                innerHTML: [scrollPercent.textContent.replace("%", ""), percent],
+                duration: 200,
+                easing: "easeOutExpo",
+                update: function(anim) {
+                    scrollPercent.textContent = `${Math.round(anim.animations[0].currentValue)}%`;
+                }
+            });
+            // 进度为0时隐藏百分比
+            scrollPercent.style.opacity = percent === 0 ? 0 : 1;
+        });
+
+        // ========== 初始化所有效果 ==========
+        window.addEventListener("DOMContentLoaded", () => {
+            initTheme();
+            // 页面加载动画（原博客逻辑）
+            anime({
+                targets: document.body,
+                opacity: [0, 1],
+                duration: 500,
+                easing: "easeOutExpo"
+            });
+            // 工具栏入场动画
+            anime({
+                targets: ".right-side-tools-container",
+                translateY: [20, 0],
+                opacity: [0, 1],
+                duration: 600,
+                easing: "easeOutExpo",
+                delay: 200
+            });
+            // 导航栏入场动画
+            anime({
+                targets: ".navbar-container",
+                translateY: [-20, 0],
+                opacity: [0, 1],
+                duration: 600,
+                easing: "easeOutExpo"
+            });
+        });
     </script>
 </body>
 </html>

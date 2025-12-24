@@ -8,10 +8,16 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- 本地 Chillax 字体优先 -->
+    <link rel="stylesheet" href="fonts/Chillax_Complete/Fonts/WEB/css/chillax.css">
     <!-- 优先使用 woff2，若无则回退到 ttf；font-display:swap 提升可见性 -->
     <!-- 运行时长依赖（odometer） -->
     <link rel="stylesheet" href="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/assets/odometer-theme-minimal.css">
     <script src="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/js/build/libs/odometer.min.js"></script>
+    <!-- APlayer + MetingJS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
     <style>
         @font-face{
             font-family: 'SJ-Narrow';
@@ -38,6 +44,17 @@
                 if(use === 'dark') document.documentElement.setAttribute('data-theme','dark');
             }catch(e){}
         })();
+    </script>
+    <script>
+        // navbar scroll shrink behavior (from example.html)
+        document.addEventListener('DOMContentLoaded', ()=>{
+            const top = document.querySelector('.top-nav');
+            const navc = document.querySelector('.navbar-container');
+            function onScroll(){ const y = window.scrollY || window.pageYOffset; if(y>50){ navc && navc.classList.add('shrink'); top && top.classList.add('shrink'); } else { navc && navc.classList.remove('shrink'); top && top.classList.remove('shrink'); } }
+            window.addEventListener('scroll', onScroll); onScroll();
+            document.querySelectorAll('.drawer-navbar-item a').forEach(link=> link.addEventListener('click', ()=>{ const nd = document.querySelector('.navbar-drawer'); const mask = document.getElementById('windowMask'); if(nd){ nd.classList.remove('open'); mask && mask.classList.remove('show'); document.body.style.overflow=''; } }));
+            const navbarBar = document.getElementById('navbarBar'); if(navbarBar){ navbarBar.addEventListener('click', ()=>{ const nd = document.querySelector('.navbar-drawer'); const mask = document.getElementById('windowMask'); if(!nd) return; if(nd.classList.contains('open')){ nd.classList.remove('open'); mask && mask.classList.remove('show'); document.body.style.overflow=''; } else { nd.classList.add('open'); mask && mask.classList.add('show'); document.body.style.overflow='hidden'; } }); }
+        });
     </script>
     <style>
         /* 引入本地 SJ-Narrow 字体：Light 与 Regular */
@@ -141,9 +158,35 @@
         }
         /* 运行时长小组件样式（固定右下） */
         .runtime-widget{ position:fixed; right:18px; bottom:18px; z-index:11001; background:var(--card-bg); padding:10px 14px; border-radius:12px; box-shadow:var(--shadow-soft); font-size:13px; color:var(--text); display:flex; gap:8px; align-items:center; }
-        .runtime-widget .odometer{ font-weight:700; margin:0 4px; }
+        .runtime-widget .odometer{ font-weight:700; margin:0 6px; font-size:13px }
+        .runtime-widget .runtime-label{ font-weight:700; font-size:13px }
+        .runtime-widget .anniv-row .anniv-count{ font-size:16px; font-weight:800 }
+        /* music + runtime stack */
+        .widget-stack{ position:fixed; right:18px; bottom:18px; z-index:11001; display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
+        .music-widget{ width:320px; border-radius:12px; overflow:hidden; box-shadow:var(--shadow-soft); background:var(--card-bg); }
+        .music-header{ display:flex; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; cursor:pointer }
+        .music-header .title{ font-weight:700; font-family:'Chillax-Semibold','Chillax-Regular',sans-serif }
+        .music-body{ height:0; overflow:hidden; transition:height 360ms ease; }
+        .music-body.open{ height:220px; }
+        .music-body iframe{ width:100%; height:220px; border:none; display:block }
+        /* 顶部右侧隐藏式音乐控制：常态收起到屏幕右侧，仅保留小 tab；悬停或点击滑出 */
+        .music-handle{ position:fixed; right:18px; top:18px; width:44px; height:44px; border-radius:10px; background:var(--card-bg); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow-soft); z-index:11002; cursor:pointer; }
+        .music-handle i{ font-size:18px; color:var(--primary-blue); }
+        .music-widget{ position:fixed; right:18px; top:72px; width:320px; border-radius:12px; overflow:hidden; box-shadow:var(--shadow-soft); background:var(--card-bg); z-index:11001; transform: translateX(calc(100% - 48px)); transition:transform 320ms cubic-bezier(.2,.9,.2,1); }
+        .music-handle:hover + .music-widget, .music-widget.show, .music-widget:hover{ transform: translateX(0); }
+        .music-body{ height:0; overflow:hidden; transition:height 320ms ease }
+        .music-body.open{ height:220px }
+        .music-popup{ position:fixed; right:22px; top:72px; z-index:11003; background:var(--card-bg); padding:10px 12px; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.12); display:none; min-width:240px }
+        .music-popup.show{ display:block }
+        .pop{ animation: pop 420ms cubic-bezier(.2,.9,.2,1); }
+        @keyframes pop{ 0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)} }
+        .fw-container{ position:absolute; inset:auto 0 auto 0; pointer-events:none; z-index:12000; width:100%; height:0; }
+        .confetti{ position:absolute; width:8px; height:16px; border-radius:2px; opacity:0; transform-origin:center; }
         html,body{height:100%;}
-        body{margin:0;padding:0;font-family:'Poppins', 'Noto Sans SC', sans-serif;background:var(--bg);color:var(--text-dark);-webkit-font-smoothing:antialiased}
+        body{margin:0;padding:0;font-family:'Chillax-Variable','Chillax-Regular','Poppins','Noto Sans SC', sans-serif;background:var(--bg);color:var(--text-dark);-webkit-font-smoothing:antialiased}
+        /* 强制 Chillax 字体用于主文案，保留 icon 字体 */
+        body, h1, h2, h3, h4, h5, h6, p, a, span, div, li, input, textarea, select, button { font-family: 'Chillax-Variable','Chillax-Regular', sans-serif !important; }
+        .fa, .fas, .far, .fab, i[class^="fa"], span[class^="fa"] { font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', sans-serif !important; font-weight: 900 !important; }
 
         .content-wrapper{max-width:1180px;margin:28px auto;padding:22px}
 
@@ -464,37 +507,123 @@
             })();
         });
     </script>
-    <!-- 运行时长小组件 -->
-    <div class="runtime-widget" role="note" aria-label="花咲一秋项目运行了：">
-        <span>运行:</span>
-        <span id="runtime_days" class="odometer">0</span>
-        <span>d</span>
-        <span id="runtime_hours" class="odometer">0</span>
-        <span>h</span>
-        <span id="runtime_minutes" class="odometer">0</span>
-        <span>m</span>
-        <span id="runtime_seconds" class="odometer">0</span>
-        <span>s</span>
+    <!-- 右下堆栈控件：音乐播放器 + 运行时长小组件 -->
+    <div class="widget-stack" aria-hidden="false">
+        <!-- 顶部 handle + 隐藏式音乐播放器 -->
+        <div class="music-handle" id="musicHandle" role="button" title="音乐播放器" aria-label="音乐播放器控制">
+            <i class="fa fa-music" aria-hidden="true"></i>
+        </div>
+        <div class="music-widget" id="musicWidget" aria-label="音乐播放器">
+            <div class="music-header" id="musicToggle" role="button" aria-expanded="false">
+                <div style="display:flex;align-items:center;gap:10px">
+                    <i class="fa fa-music" aria-hidden="true"></i>
+                    <div class="title">音乐播放器</div>
+                </div>
+                <div style="font-size:12px;color:var(--muted)">悬停展开或点击控制</div>
+            </div>
+            <div class="music-body" id="musicBody">
+                <meting-js server="netease" type="playlist" id="2639364381"></meting-js>
+            </div>
+        </div>
+
+        <div class="runtime-widget" role="note" aria-label="花咲一秋项目运行与周年进度">
+            <div class="anniv-row">
+                <div style="display:flex;align-items:center">
+                    <div class="anniv-label">Anniversary</div>
+                    <div id="anniv-count" class="anniv-count">0</div>
+                </div>
+                <div id="anniv-percent" style="font-size:14px;color:var(--muted);font-weight:700">0%</div>
+            </div>
+            <div class="progress-track" aria-hidden="true">
+                <div id="anniv-fill" class="progress-fill" style="width:0%"></div>
+                <div class="progress-overlay">
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span class="runtime-label">运行：</span>
+                        <span id="runtime_days" class="odometer">0</span>
+                        <span class="runtime-label">d</span>
+                        <span id="runtime_hours" class="odometer">0</span>
+                        <span class="runtime-label">h</span>
+                        <span id="runtime_minutes" class="odometer">0</span>
+                        <span class="runtime-label">m</span>
+                        <span id="runtime_seconds" class="odometer">0</span>
+                        <span class="runtime-label">s</span>
+                    </div>
+                </div>
+            </div>
+            <div class="fw-container" id="fw"></div>
+        </div>
     </div>
 
     <script>
-        // 运行时长统计脚本（Thanks 页面）
+        // 运行时长 + 周年脚本（Thanks 页面）
         (function(){
             const blogStartDate = new Date(2025,9,28,0,0,0);
-            function odometer_init(){
-                document.querySelectorAll('.odometer').forEach(e=>{ try{ new Odometer({ el: e, format: '(ddd)', duration: 200 }); }catch(err){} });
-            }
-            function updateRuntime(){
-                const now = new Date(); const diff = now - blogStartDate;
+            let lastAnnivCount = null;
+            function odometer_init(){ document.querySelectorAll('.odometer').forEach(e=>{ try{ new Odometer({ el: e, format: '(ddd)', duration: 200 }); }catch(err){} }); }
+            function animateNumber(el){ if(!el) return; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),600); }
+            function playFireworks(){ const container = document.getElementById('fw'); if(!container) return; const colors=['#ff5e7f','#ffd166','#8fd3ff','#9be28f','#d6a4ff']; for(let i=0;i<16;i++){ const n=document.createElement('div'); n.className='confetti'; n.style.left=(20+Math.random()*280)+'px'; n.style.top=(8+Math.random()*30)+'px'; n.style.background=colors[Math.floor(Math.random()*colors.length)]; n.style.opacity='1'; const dur=800+Math.floor(Math.random()*600); n.style.transition=`transform ${dur}ms cubic-bezier(.2,.8,.2,1), opacity ${dur}ms linear`; container.appendChild(n); setTimeout(()=>{ const tx=(Math.random()*160-80)+'px'; n.style.transform=`translate(${tx},${120+Math.random()*40}px) rotate(${Math.random()*720}deg)`; n.style.opacity='0'; },10+Math.random()*80); setTimeout(()=>{ try{ container.removeChild(n);}catch(e){} }, dur+220); } }
+            function updateRuntimeAndAnniv(){
+                const now = new Date();
+                const diff = now - blogStartDate;
                 const seconds = Math.floor((diff/1000)%60);
                 const minutes = Math.floor((diff/(1000*60))%60);
                 const hours = Math.floor((diff/(1000*60*60))%24);
                 const days = Math.floor(diff/(1000*60*60*24));
-                const d = document.getElementById('runtime_days'); const h = document.getElementById('runtime_hours');
-                const m = document.getElementById('runtime_minutes'); const s = document.getElementById('runtime_seconds');
-                if(d) d.innerText = days; if(h) h.innerText = hours; if(m) m.innerText = minutes; if(s) s.innerText = seconds;
+                const d = document.getElementById('runtime_days');
+                const h = document.getElementById('runtime_hours');
+                const m = document.getElementById('runtime_minutes');
+                const s = document.getElementById('runtime_seconds');
+                if(d && String(d.innerText) !== String(days)){ d.innerText = days; animateNumber(d); }
+                if(h && String(h.innerText) !== String(hours)){ h.innerText = hours; animateNumber(h); }
+                if(m && String(m.innerText) !== String(minutes)){ m.innerText = minutes; animateNumber(m); }
+                if(s && String(s.innerText) !== String(seconds)){ s.innerText = seconds; animateNumber(s); }
+
+                const start = new Date(blogStartDate.getTime());
+                let years = now.getFullYear() - start.getFullYear();
+                let last = new Date(start.getTime()); last.setFullYear(start.getFullYear() + years);
+                if(now < last){ years -= 1; last.setFullYear(start.getFullYear() + years); }
+                const next = new Date(last.getTime()); next.setFullYear(last.getFullYear() + 1);
+                const annivCount = Math.max(0, years);
+                const annivEl = document.getElementById('anniv-count');
+                if(annivEl && String(annivEl.textContent) !== String(annivCount)){ annivEl.textContent = annivCount; animateNumber(annivEl); }
+
+                const fillEl = document.getElementById('anniv-fill');
+                if(fillEl){
+                    const total = next - last;
+                    const elapsed = now - last;
+                    const pct = total > 0 ? Math.max(0, Math.min(1, elapsed/total)) : 0;
+                    fillEl.style.width = (pct*100) + '%';
+                    const colors = ['#6a93c9','#ffcc66','#8fd3ff','#ff99cc','#9be28f','#d6a4ff'];
+                    fillEl.style.background = colors[annivCount % colors.length];
+                    // 更新百分比保留两位小数
+                    const pctEl = document.getElementById('anniv-percent'); if(pctEl) pctEl.textContent = (pct*100).toFixed(2) + '%';
+                }
+
+                if(lastAnnivCount === null) lastAnnivCount = annivCount;
+                else if(annivCount > lastAnnivCount){ playFireworks(); lastAnnivCount = annivCount; }
+                else { lastAnnivCount = annivCount; }
             }
-            document.addEventListener('DOMContentLoaded', ()=>{ odometer_init(); updateRuntime(); setInterval(updateRuntime, 1000); });
+            document.addEventListener('DOMContentLoaded', ()=>{
+                odometer_init(); updateRuntimeAndAnniv(); setInterval(updateRuntimeAndAnniv, 1000);
+                const musicToggle = document.getElementById('musicToggle'); const musicBody = document.getElementById('musicBody'); if(musicToggle && musicBody){ musicToggle.addEventListener('click', ()=>{ const open = musicBody.classList.toggle('open'); musicToggle.setAttribute('aria-expanded', open ? 'true' : 'false'); }); }
+                // handle 点击切换
+                const musicHandle = document.getElementById('musicHandle'); if(musicHandle){ musicHandle.addEventListener('click', ()=>{ const body = document.getElementById('musicBody'); if(!body) return; const open = body.classList.toggle('open'); musicHandle.setAttribute('aria-expanded', open ? 'true' : 'false'); }); }
+                // Meting/APlayer：右上滑入卡片 + 首次随机自动播放（音量 15%） + 切歌弹窗
+                (function initMetingPlayer(){
+                    const FLAG = 'hanasaki_music_autoplay_v1';
+                    const metingEl = document.querySelector('meting-js');
+                    if(!metingEl) return;
+                    function escapeHtmlLocal(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+                    function showMusicPopup(track){ if(!track) return; const title = track.name || track.title || '未知曲目'; const artist = (track.artist && (typeof track.artist==='string'?track.artist: Array.isArray(track.artist)? track.artist.map(a=>a.name||a).join(', '): JSON.stringify(track.artist))) || track.author || ''; const popup = document.getElementById('musicPopup') || (function(){ const p=document.createElement('div'); p.id='musicPopup'; p.className='music-popup'; document.body.appendChild(p); return p; })(); popup.innerHTML = `<div style="font-weight:700;margin-bottom:6px">即将播放：${escapeHtmlLocal(title)}</div><div style="font-size:13px;color:var(--muted)">${escapeHtmlLocal(artist||'未知')}</div>`; popup.classList.add('show'); setTimeout(()=>{ popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play==='function') a.play(); }catch(e){} },3000); }
+                    function whenAPlayerReady(cb){ const a = metingEl.aplayer || metingEl._aplayer || (window.APlayer && window.APlayer.instances && window.APlayer.instances[0]); if(!a) return setTimeout(()=>whenAPlayerReady(cb),200); if(!a.list || a.list.length===0) return setTimeout(()=>whenAPlayerReady(cb),200); cb(a); }
+                    whenAPlayerReady((a)=>{
+                        try{ if(typeof a.setVolume === 'function') a.setVolume(0.15); else if(typeof a.volume === 'function') a.volume(0.15); else if(a.audio) a.audio.volume = 0.15; }catch(e){}
+                        try{ if(typeof a.on === 'function'){ a.on('play', ()=>{ try{ const idx = a.index || 0; const t = (a.list && a.list[idx]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t); }catch(e){} }); } }catch(e){}
+                        try{ if(!localStorage.getItem(FLAG)){ const count = a.list.length || 1; const rnd = Math.floor(Math.random()*count); try{ a.index = rnd; }catch(e){} try{ if(typeof a.switch === 'function') a.switch(rnd); }catch(e){} try{ a.play(); }catch(e){} const t = (a.list && a.list[rnd]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t); localStorage.setItem(FLAG,'1'); } }catch(e){}
+                        const handle = document.getElementById('musicHandle'); const widget = document.getElementById('musicWidget'); const body = document.getElementById('musicBody'); if(handle && widget){ handle.addEventListener('click', ()=>{ widget.classList.toggle('show'); if(body) body.classList.toggle('open'); handle.setAttribute('aria-expanded', widget.classList.contains('show')); }); }
+                    });
+                })();
+            });
         })();
     </script>
     <!-- 大型感谢区 -->

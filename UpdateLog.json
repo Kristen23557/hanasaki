@@ -2,7 +2,7 @@
     {
         "UpdateLevel":"First Release",      
         "TimeStamp":"2025/12/21",
-        "Version":"0.1.0",
+        "Version":"Hanasaki 0.1.0",
         "Log": [
             {
                 "Title":"花咲一秋项目初始版本发布",
@@ -14,12 +14,24 @@
     {
         "UpdateLevel":"Website Release",      
         "TimeStamp":"2025/12/23",
-        "Version":"0.1.0",
+        "Version":"Website 0.1.0",
         "Log": [
             {
                 "Title":"花咲一秋项目网站初始版本发布",
                 "Content":"项目网页的预览版本，实现了一些功能（帮助文档还是新建文件夹desu）。",
                 "Whisper":"工作日写网页真的很累人..."
+            }
+        ]
+    },
+        {
+        "UpdateLevel":"Website Update(Minor)",      
+        "TimeStamp":"2025/12/24",
+        "Version":"Website 0.1.1 snapshot",
+        "Log": [
+            {
+                "Title":"网站功能更新",
+                "Content":"项目网页的预览快照版本，更新了右下的倒计时组件，以及一个音乐播放器（目前还有bug，不过在修了），导航栏样式也做出了更新，更好看了。",
+                "Whisper":"说不定什么时候我在这弄点小秋自己唱的歌（也许？大概？可能？）"
             }
         ]
     }

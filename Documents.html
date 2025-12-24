@@ -5,10 +5,31 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>帮助手册 - 花咲一秋</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="fonts/Chillax_Complete/Fonts/WEB/css/chillax.css">
+    <!-- APlayer + MetingJS -->
+    <link href="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
+    <!-- odometer for runtime display -->
+    <link rel="stylesheet" href="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/assets/odometer-theme-minimal.css">
+    <script src="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/js/build/libs/odometer.min.js"></script>
     <style>
-        body{font-family: 'Noto Sans SC', sans-serif;padding:24px;background:linear-gradient(180deg,#f5f7fa,#eaf0fb);color:#111}
+        body{font-family: 'Chillax-Variable','Chillax-Regular','Noto Sans SC', sans-serif;padding:24px;background:linear-gradient(180deg,#f5f7fa,#eaf0fb);color:#111}
+        body,h1,h2,h3,h4,h5,h6,p,a,span,div,li,input,textarea,select,button{ font-family: 'Chillax-Variable','Chillax-Regular', sans-serif !important; }
+        .fa, .fas, .far, .fab, i[class^="fa"], span[class^="fa"] { font-family: 'Font Awesome 6 Free', 'Font Awesome 5 Free', sans-serif !important; font-weight: 900 !important; }
         .top-nav{display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto 18px;padding:12px;background:#fff;border-radius:10px;box-shadow:0 8px 26px rgba(0,0,0,0.06)}
         .top-nav a{margin-left:12px;text-decoration:none;color:#556}
+        /* 隐藏式顶部音乐播放器样式（靠右边缘，仅留 tab） */
+        .music-handle{ position:fixed; right:18px; top:18px; width:44px; height:44px; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 12px 30px rgba(0,0,0,0.12); z-index:11002; cursor:pointer }
+        .music-handle i{ font-size:18px; color:#556 }
+        .music-widget{ position:fixed; right:18px; top:72px; width:320px; border-radius:12px; overflow:hidden; box-shadow:0 12px 30px rgba(0,0,0,0.12); background:#fff; z-index:11001; transform: translateX(calc(100% - 48px)); transition:transform 320ms cubic-bezier(.2,.9,.2,1); }
+        .music-handle:hover + .music-widget, .music-widget.show, .music-widget:hover{ transform: translateX(0); }
+        .music-body{ height:0; overflow:hidden; transition:height 320ms ease }
+        .music-body.open{ height:220px }
+        .music-body{ height:0; overflow:hidden; transition:height 320ms ease }
+        .music-body.open{ height:220px }
+        .music-popup{ position:fixed; right:22px; top:72px; z-index:11003; background:#fff; padding:10px 12px; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.12); display:none; min-width:240px }
+        .music-popup.show{ display:block }
     </style>
 </head>
 <body>
@@ -19,9 +40,81 @@
             <a href="Thanks.html">感谢名单</a>
         </div>
     </div>
+    <!-- 运行时长小组件（与 index 页面样式一致） -->
+    <div class="runtime-widget" role="note" aria-label="花咲一秋项目运行与周年进度">
+        <div class="anniv-row">
+            <div style="display:flex;align-items:center">
+                <div class="anniv-label">周年进度 Anniversary </div>
+                <div id="anniv-count" class="anniv-count">0</div>
+            </div>
+            <div id="anniv-percent" style="font-size:14px;color:var(--muted);font-weight:700">0%</div>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+            <div id="anniv-fill" class="progress-fill" style="width:0%"></div>
+            <div class="progress-overlay">
+                <div style="display:flex;align-items:center;gap:8px">
+                    <span class="runtime-label"></span>
+                    <span id="runtime_days" class="odometer">0</span>
+                    <span class="runtime-label">d</span>
+                    <span id="runtime_hours" class="odometer">0</span>
+                    <span class="runtime-label">h</span>
+                    <span id="runtime_minutes" class="odometer">0</span>
+                    <span class="runtime-label">m</span>
+                    <span id="runtime_seconds" class="odometer">0</span>
+                    <span class="runtime-label">s</span>
+                </div>
+            </div>
+        </div>
+        <div class="fw-container" id="fw"></div>
+    </div>
     <main style="max-width:1100px;margin:0 auto;padding:24px;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,0.06)">
         <h1>帮助手册</h1>
         <p>此页面暂时为空，但顶部导航已提供“更新日志”入口以返回并打开更新日志视图。</p>
     </main>
+    <!-- 音乐播放器（文档页也提供） -->
+    <div class="music-handle" id="musicHandleDocs" role="button" title="音乐播放器" aria-label="音乐播放器控制">
+        <i class="fa fa-music"></i>
+    </div>
+    <div class="music-widget" id="musicWidgetDocs">
+        <div class="music-header" id="musicToggleDocs" role="button" aria-expanded="false">
+            <div style="display:flex;align-items:center;gap:10px"><i class="fa fa-music"></i><div style="font-weight:700">音乐播放器</div></div>
+            <div style="font-size:12px;color:#667">悬停展开或点击控制</div>
+        </div>
+        <div class="music-body" id="musicBodyDocs">
+            <meting-js server="netease" type="playlist" id="2639364381"></meting-js>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', ()=>{
+            const t = document.getElementById('musicToggleDocs'); const b = document.getElementById('musicBodyDocs'); if(t && b){ t.addEventListener('click', ()=>{ b.classList.toggle('open'); t.setAttribute('aria-expanded', b.classList.contains('open')); }); }
+            const handle = document.getElementById('musicHandleDocs'); if(handle){ handle.addEventListener('click', ()=>{ const body = document.getElementById('musicBodyDocs'); if(!body) return; const open = body.classList.toggle('open'); handle.setAttribute('aria-expanded', open ? 'true':'false'); }); }
+            // Meting/APlayer popup for Documents
+            // 初始化 Meting/APlayer：右上滑入卡片 + 首次随机自动播放（音量 15%） + 切歌弹窗
+            (function initMetingPlayer(){
+                const FLAG = 'hanasaki_music_autoplay_v1';
+                const metingEl = document.querySelector('meting-js'); if(!metingEl) return;
+                function escapeHtmlLocal(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+                function showMusicPopup(track){ if(!track) return; const title = track.name || track.title || '未知曲目'; const artist = (track.artist && (typeof track.artist==='string'?track.artist: Array.isArray(track.artist)? track.artist.map(a=>a.name||a).join(', '): JSON.stringify(track.artist))) || track.author || ''; const popup = document.getElementById('musicPopup') || (function(){ const p=document.createElement('div'); p.id='musicPopup'; p.className='music-popup'; document.body.appendChild(p); return p; })(); popup.innerHTML = `<div style="font-weight:700;margin-bottom:6px">即将播放：${escapeHtmlLocal(title)}</div><div style="font-size:13px;color:#667">演唱/作者：${escapeHtmlLocal(artist||'未知')}</div>`; popup.classList.add('show'); setTimeout(()=>{ popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play==='function') a.play(); }catch(e){} },3000); }
+                function whenAPlayerReady(cb){ const a = metingEl.aplayer || metingEl._aplayer || (window.APlayer && window.APlayer.instances && window.APlayer.instances[0]); if(!a) return setTimeout(()=>whenAPlayerReady(cb),200); if(!a.list || a.list.length===0) return setTimeout(()=>whenAPlayerReady(cb),200); cb(a); }
+                whenAPlayerReady((a)=>{
+                    try{ if(typeof a.setVolume === 'function') a.setVolume(0.15); else if(typeof a.volume === 'function') a.volume(0.15); else if(a.audio) a.audio.volume = 0.15; }catch(e){}
+                    try{ if(typeof a.on === 'function'){ a.on('play', ()=>{ try{ const idx = a.index || 0; const t = (a.list && a.list[idx]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t); }catch(e){} }); } }catch(e){}
+                    try{ if(!localStorage.getItem(FLAG)){ const count = a.list.length || 1; const rnd = Math.floor(Math.random()*count); try{ a.index = rnd; }catch(e){} try{ if(typeof a.switch === 'function') a.switch(rnd); }catch(e){} try{ a.play(); }catch(e){} const t = (a.list && a.list[rnd]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t); localStorage.setItem(FLAG,'1'); } }catch(e){}
+                    const handle = document.getElementById('musicHandleDocs') || document.getElementById('musicHandle'); const widget = document.getElementById('musicWidgetDocs') || document.getElementById('musicWidget'); const body = document.getElementById('musicBodyDocs') || document.getElementById('musicBody'); if(handle && widget){ handle.addEventListener('click', ()=>{ widget.classList.toggle('show'); if(body) body.classList.toggle('open'); handle.setAttribute('aria-expanded', widget.classList.contains('show')); }); }
+                });
+            })();
+        });
+    </script>
+    <script>
+        // navbar scroll shrink behavior (apply example.html interaction)
+        document.addEventListener('DOMContentLoaded', ()=>{
+            const top = document.querySelector('.top-nav');
+            const navc = document.querySelector('.navbar-container');
+            function onScroll(){ const y = window.scrollY || window.pageYOffset; if(y>50){ navc && navc.classList.add('shrink'); top && top.classList.add('shrink'); } else { navc && navc.classList.remove('shrink'); top && top.classList.remove('shrink'); } }
+            window.addEventListener('scroll', onScroll); onScroll();
+            document.querySelectorAll('.drawer-navbar-item a').forEach(link=> link.addEventListener('click', ()=>{ const nd = document.querySelector('.navbar-drawer'); const mask = document.getElementById('windowMask'); if(nd){ nd.classList.remove('open'); mask && mask.classList.remove('show'); document.body.style.overflow=''; } }));
+            const navbarBar = document.getElementById('navbarBar'); if(navbarBar){ navbarBar.addEventListener('click', ()=>{ const nd = document.querySelector('.navbar-drawer'); const mask = document.getElementById('windowMask'); if(!nd) return; if(nd.classList.contains('open')){ nd.classList.remove('open'); mask && mask.classList.remove('show'); document.body.style.overflow=''; } else { nd.classList.add('open'); mask && mask.classList.add('show'); document.body.style.overflow='hidden'; } }); }
+        });
+    </script>
 </body>
 </html>
