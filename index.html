@@ -8,6 +8,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- 引入 Chillax 字体（本地优先） -->
+    <link rel="stylesheet" href="fonts/Chillax_Complete/Fonts/WEB/css/chillax.css">
     <!-- 预加载动画与运行时长依赖（用于预加载动画与运行时长计数） -->
     <link rel="stylesheet" href="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/assets/odometer-theme-minimal.css">
     <script src="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/js/build/libs/anime.min.js"></script>
@@ -34,8 +36,8 @@
         :root{ --preloader-background-color: var(--card-bg); --preloader-text-color: var(--text-dark); }
         @media (prefers-color-scheme: dark){ :root{ --preloader-background-color:#071018; --preloader-text-color:var(--text-light); } }
         .preloader{ display:flex;flex-direction:column;gap:1rem;align-items:center;justify-content:center;position:fixed;padding:12px;top:0;right:0;bottom:0;left:0;width:100vw;height:100vh;background-color:var(--preloader-background-color);z-index:11000;transition:opacity .45s ease-in-out !important }
-        /* 使用 微软雅黑 字体（用户指定） */
-        .preloader .ml13{ font-size:2.6rem;color:var(--preloader-text-color);letter-spacing:-1px;font-weight:500;font-family:'Microsoft YaHei','微软雅黑',sans-serif;text-align:center }
+        /* 使用 Chillax 字体（用户指定），回退到系统无衬线 */
+        .preloader .ml13{ font-size:2.6rem;color:var(--preloader-text-color);letter-spacing:-1px;font-weight:500;font-family:'Chillax', 'Microsoft YaHei', '微软雅黑', sans-serif;text-align:center }
         /* 如果 reduced-motion 被启用，仍要允许 preloader 的淡出过渡可见（覆盖全局 reduced-motion 规则） */
         .reduced-motion .preloader{ transition:opacity .45s ease-in-out !important; }
         .preloader .word{ display:inline-flex;flex-wrap:wrap;white-space:nowrap }
@@ -59,8 +61,8 @@
         // 可访问性：减少动画偏好（Index 页面）
         (function(){
             const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
-            if(mq.matches){ document.documentElement.classList.add('reduce-motion'); }
-            mq.addEventListener && mq.addEventListener('change', (e)=>{ if(e.matches) document.documentElement.classList.add('reduce-motion'); else document.documentElement.classList.remove('reduce-motion'); });
+            if(mq.matches){ document.documentElement.classList.add('reduced-motion'); }
+            mq.addEventListener && mq.addEventListener('change', (e)=>{ if(e.matches) document.documentElement.classList.add('reduced-motion'); else document.documentElement.classList.remove('reduced-motion'); });
         })();
 
         // 观察器：为 index 页面卡片添加入场触发（插入后绑定）
@@ -883,7 +885,7 @@
 <body>
     <!-- 预加载动画（页面首屏预加载） -->
     <div class="preloader" id="preloader" role="status" aria-label="页面加载中">
-        <h2 class="ml13">Stable Connection CREATED</h2>
+        <h2 class="ml13">[HANASAKI] CONNECTED</h2>
     </div>
     <!-- 装饰性浮动控件：回到顶部 & 脉冲心 -->
     <button id="back-to-top" title="回到顶部" style="display:none;">↑</button>
@@ -924,7 +926,7 @@
                             <button id="changelog-close" class="nav-toggle" aria-label="关闭更新日志">关闭</button>
                         </div>
                     </div>
-                    <p class="note" style="margin-bottom:18px;color:var(--muted)">以下为网站更新记录（按时间倒序显示）。</p>
+                    <p class="note" style="margin-bottom:18px;color:var(--muted)">以下为花咲一秋的更新日志（按时间显示）。</p>
                     <div class="changelog-wrap">
                         <div class="timeline" id="timeline">正在加载…</div>
                     </div>
@@ -1313,25 +1315,37 @@
                         textWrapper.appendChild(wordSpan); textWrapper.appendChild(document.createTextNode(' '));
                     });
 
-                    var animation = anime.timeline({ loop: false })
-                    .add({
-                        targets: '.preloader .letter',
-                        translateY: [20,0],
-                        translateZ: 0,
-                        opacity: [0,1],
-                        easing: 'easeOutExpo',
-                        duration: 900,
-                        delay: (el,i)=> 200 + 20*i
-                    })
-                    .add({
-                        targets: '.preloader .letter',
-                        translateY: [0, -20],
-                        opacity: [1, 0],
-                        easing: 'easeInExpo',
-                        duration: 900,
-                        delay: (el,i)=> 15 * i,
-                        complete: function(){ try{ hidePreloader(); }catch(e){} }
-                    }, '+=700');
+                    // 使用 example.html 中完全相同的动画序列（字母滑入淡入，滑出淡出）
+                    // Respect prefers-reduced-motion: if set, skip detailed anim and hide preloader soon
+                    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                    if(reduceMotion){
+                        // reveal letters statically and hide preloader shortly
+                        var letters = document.querySelectorAll('.preloader .letter');
+                        letters.forEach(function(l){ l.style.opacity = '1'; l.style.transform = 'translateY(0)'; });
+                        setTimeout(function(){ try{ hidePreloader(); }catch(e){} }, 700);
+                    } else {
+                        var animation = anime.timeline({ loop: true })
+                        .add({
+                            targets: '.preloader .letter',
+                            translateY: [20, 0],
+                            translateZ: 0,
+                            opacity: [0, 1],
+                            filter: ['blur(5px)', 'blur(0px)'],
+                            easing: 'easeOutExpo',
+                            duration: 1200,
+                            delay: (el, i) => 300 + 20 * i,
+                        })
+                        .add({
+                            targets: '.preloader .letter',
+                            translateY: [0, -20],
+                            opacity: [1, 0],
+                            filter: ['blur(0px)', 'blur(5px)'],
+                            easing: 'easeInExpo',
+                            duration: 1000,
+                            delay: (el, i) => 15 * i,
+                            complete: function() { try{ hidePreloader(); }catch(e){} }
+                        }, '-=700');
+                    }
                 }
             }catch(e){console.error(e)}
 
@@ -1341,7 +1355,7 @@
                 el.style.opacity = '0';
                 setTimeout(function(){ el.style.display='none'; }, 400);
             }
-            window.addEventListener('load', function(){ setTimeout(hidePreloader, 900); });
+            window.addEventListener('load', function(){ setTimeout(hidePreloader, 5000); });
             // 10s 兜底
             setTimeout(hidePreloader, 10000);
         })();
