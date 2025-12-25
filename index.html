@@ -2162,6 +2162,231 @@
             <div class="fw-container" id="fw"></div>
         </div>
     </div>
+
+    //<!-- 在 </body> 标签之前添加这段修复代码 -->
+    <script>
+    // 修复音乐播放器卡片点击问题
+    (function fixMusicWidgetInteraction() {
+        console.log('开始修复音乐播放器交互...');
+        
+        // 等待页面和播放器完全加载
+        setTimeout(function() {
+            const musicWidget = document.getElementById('musicWidget');
+            const musicBody = document.getElementById('musicBody');
+            const musicToggle = document.getElementById('musicToggle');
+            
+            if (!musicWidget || !musicBody || !musicToggle) {
+                console.warn('音乐播放器元素未找到，重试...');
+                setTimeout(fixMusicWidgetInteraction, 500);
+                return;
+            }
+            
+            console.log('找到音乐播放器元素，开始修复...');
+            
+            // 1. 重新绑定头部点击事件
+            function setupToggleClick() {
+                // 清理原有事件
+                const newToggle = musicToggle.cloneNode(true);
+                musicToggle.parentNode.replaceChild(newToggle, musicToggle);
+                
+                const newToggleElement = document.getElementById('musicToggle');
+                
+                newToggleElement.addEventListener('click', function(e) {
+                    console.log('音乐卡片头部被点击');
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                    
+                    const body = document.getElementById('musicBody');
+                    const widget = document.getElementById('musicWidget');
+                    
+                    if (!body || !widget) return;
+                    
+                    const isOpen = body.classList.contains('open');
+                    
+                    if (isOpen) {
+                        // 关闭
+                        body.classList.remove('open');
+                        widget.classList.remove('show');
+                        widget.setAttribute('aria-hidden', 'true');
+                        newToggleElement.setAttribute('aria-expanded', 'false');
+                    } else {
+                        // 打开
+                        body.classList.add('open');
+                        widget.classList.add('show');
+                        widget.setAttribute('aria-hidden', 'false');
+                        newToggleElement.setAttribute('aria-expanded', 'true');
+                    }
+                    
+                    return false;
+                }, true); // 使用捕获阶段，确保最先执行
+            }
+            
+            // 2. 修复 CSS 样式，确保可点击
+            function applyCSSCriticalFixes() {
+                // 创建关键样式修复
+                const style = document.createElement('style');
+                style.textContent = `
+                    /* 关键修复：确保音乐卡片头部始终可点击 */
+                    #musicWidget .music-header {
+                        pointer-events: auto !important;
+                        cursor: pointer !important;
+                        z-index: 10002 !important;
+                        position: relative;
+                    }
+                    
+                    /* 隔离 APlayer 的点击事件 */
+                    #musicWidget .music-body {
+                        pointer-events: none !important;
+                    }
+                    
+                    /* 但允许 APlayer 内部控件可点击 */
+                    #musicWidget .music-body .aplayer,
+                    #musicWidget .music-body iframe {
+                        pointer-events: auto !important;
+                    }
+                    
+                    /* APlayer 控件内部元素 */
+                    .aplayer .aplayer-pic,
+                    .aplayer .aplayer-info,
+                    .aplayer .aplayer-controller,
+                    .aplayer .aplayer-list {
+                        pointer-events: auto !important;
+                    }
+                    
+                    /* 确保悬停效果正常工作 */
+                    #musicWidget:hover {
+                        transform: translateX(0) !important;
+                    }
+                    
+                    #musicWidget.show {
+                        transform: translateX(0) !important;
+                    }
+                    
+                    /* 强制头部区域层级 */
+                    .music-header * {
+                        pointer-events: none !important;
+                    }
+                    
+                    .music-header {
+                        pointer-events: auto !important;
+                        position: relative;
+                        z-index: 9999 !important;
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                // 直接样式修复
+                const toggle = document.getElementById('musicToggle');
+                if (toggle) {
+                    toggle.style.cssText += `
+                        cursor: pointer !important;
+                        pointer-events: auto !important;
+                        position: relative;
+                        z-index: 9999;
+                    `;
+                }
+                
+                const widget = document.getElementById('musicWidget');
+                if (widget) {
+                    widget.style.cssText += `
+                        pointer-events: auto !important;
+                    `;
+                }
+            }
+            
+            // 3. 修复鼠标悬停行为
+            function setupHoverBehavior() {
+                const widget = document.getElementById('musicWidget');
+                let hoverTimer = null;
+                let isMouseOver = false;
+                
+                widget.addEventListener('mouseenter', function() {
+                    isMouseOver = true;
+                    clearTimeout(hoverTimer);
+                    widget.classList.add('show');
+                    widget.setAttribute('aria-hidden', 'false');
+                });
+                
+                widget.addEventListener('mouseleave', function() {
+                    isMouseOver = false;
+                    clearTimeout(hoverTimer);
+                    
+                    const body = document.getElementById('musicBody');
+                    if (body && !body.classList.contains('open')) {
+                        hoverTimer = setTimeout(() => {
+                            if (!isMouseOver) {
+                                widget.classList.remove('show');
+                                widget.setAttribute('aria-hidden', 'true');
+                            }
+                        }, 300);
+                    }
+                });
+            }
+            
+            // 4. 检查并修复 APlayer 事件冲突
+            function fixAPlayerEventConflict() {
+                // 等待 APlayer 加载完成
+                const checkInterval = setInterval(() => {
+                    const aplayer = document.querySelector('.aplayer');
+                    if (aplayer) {
+                        clearInterval(checkInterval);
+                        console.log('APlayer 已加载，修复事件冲突');
+                        
+                        // 为 APlayer 添加包装层
+                        const wrapper = document.createElement('div');
+                        wrapper.style.cssText = `
+                            position: relative;
+                            width: 100%;
+                            height: 100%;
+                        `;
+                        
+                        // 如果 APlayer 有父元素
+                        if (aplayer.parentNode) {
+                            aplayer.parentNode.insertBefore(wrapper, aplayer);
+                            wrapper.appendChild(aplayer);
+                            
+                            // 添加保护层防止事件冒泡
+                            const protector = document.createElement('div');
+                            protector.style.cssText = `
+                                position: absolute;
+                                top: 0;
+                                left: 0;
+                                width: 100%;
+                                height: 40px;
+                                background: transparent;
+                                z-index: 99999;
+                            `;
+                            wrapper.appendChild(protector);
+                        }
+                        
+                        // 调整 APlayer 的事件处理
+                        aplayer.style.pointerEvents = 'none';
+                        
+                        // 允许控制按钮可点击
+                        const controls = aplayer.querySelectorAll(
+                            '.aplayer-pic, .aplayer-info, .aplayer-controller, .aplayer-list'
+                        );
+                        controls.forEach(control => {
+                            control.style.pointerEvents = 'auto';
+                        });
+                    }
+                }, 100);
+                
+                // 5秒后停止检查
+                setTimeout(() => clearInterval(checkInterval), 5000);
+            }
+            
+            // 执行所有修复
+            setupToggleClick();
+            applyCSSCriticalFixes();
+            setupHoverBehavior();
+            fixAPlayerEventConflict();
+            
+            console.log('音乐播放器修复完成');
+            
+        }, 1000); // 延迟1秒执行，确保页面元素加载完成
+    })();
+    </script>
 </body>
     <script>
         // Animation diagnostics: detect anime.js availability and record errors for HTTPS debugging
