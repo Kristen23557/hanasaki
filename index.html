@@ -34,6 +34,45 @@
             font-style: normal;
             font-display: swap;
         }
+
+    <script>
+        // Ensure music header toggle/hover bindings are reliable (bind immediately or retry until available)
+        (function bindMusicWidget(){
+            var header = document.getElementById('musicToggle');
+            var body = document.getElementById('musicBody');
+            var widget = document.getElementById('musicWidget');
+            if(!header || !body || !widget){
+                // elements not ready yet — try again shortly (but avoid infinite loop)
+                if(document.readyState === 'complete' || document.readyState === 'interactive'){
+                    // if DOM is ready but elements missing, give up
+                    return;
+                }
+                setTimeout(bindMusicWidget, 120);
+                return;
+            }
+            // avoid double-binding
+            if(header.dataset.musicBound === '1') return; header.dataset.musicBound = '1';
+            var releaseTrap = function(){};
+            function openWidget(){
+                try{ body.classList.add('open'); widget.classList.add('show'); widget.setAttribute('aria-hidden','false');
+                    if(typeof trapFocusIn === 'function'){ try{ releaseTrap(); }catch(e){} releaseTrap = trapFocusIn(widget) || function(){}; }
+                }catch(e){}
+            }
+            function closeWidget(){
+                try{ body.classList.remove('open'); widget.classList.remove('show'); widget.setAttribute('aria-hidden','true');
+                    try{ releaseTrap(); }catch(e){} releaseTrap = function(){};
+                }catch(e){}
+            }
+            header.addEventListener('click', function(){ if(body.classList.contains('open')) closeWidget(); else openWidget(); header.setAttribute('aria-expanded', body.classList.contains('open') ? 'true' : 'false'); });
+            header.addEventListener('keydown', function(e){ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); header.click(); } });
+            // hover reveal behavior
+            var leaveTimer = null;
+            widget.addEventListener('mouseenter', function(){ clearTimeout(leaveTimer); widget.classList.add('show'); widget.setAttribute('aria-hidden','false'); });
+            widget.addEventListener('mouseleave', function(){ leaveTimer = setTimeout(function(){ if(body && !body.classList.contains('open')){ closeWidget(); } }, 420); });
+            // global ESC to close widget if open
+            document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ if(body && body.classList.contains('open')){ closeWidget(); } } });
+        })();
+    </script>
     </style>
     <style>
         /* Preloader & runtime widget styles (adapted) */
@@ -65,20 +104,15 @@
         .music-body{ height:0; overflow:hidden; transition:height 360ms ease; }
         .music-body.open{ height:220px; }
         .music-body iframe{ width:100%; height:220px; border:none; display:block }
-        /* 顶部右侧隐藏式音乐控制（handle 悬停展开） */
-        .music-handle{ position:fixed; right:18px; top:18px; width:44px; height:44px; border-radius:10px; background:var(--card-bg); display:flex; align-items:center; justify-content:center; box-shadow:var(--shadow); z-index:11002; cursor:pointer; transition:transform 220ms, opacity 220ms; }
-        .music-handle i{ font-size:18px; color:var(--primary-blue); }
-        /* 将播放器常态隐藏为靠右边缘，仅展示左侧音符 tab；滑出/滑入使用 transform: translateX 动画 */
+        /* 将播放器常态隐藏为靠右边缘，仅展示卡片左侧小边距；滑出/滑入使用 transform: translateX 动画 */
         .music-widget{ position:fixed; right:18px; top:72px; width:320px; border-radius:12px; overflow:hidden; box-shadow:var(--shadow); background:var(--card-bg); z-index:11001; transform: translateX(calc(100% - 48px)); transition:transform 320ms cubic-bezier(.2,.9,.2,1); pointer-events:auto }
-        /* 当 hover handle 或鼠标移入 widget 时滑出到视口内 */
-        .music-handle:hover + .music-widget, .music-widget.show, .music-widget:hover{ transform: translateX(0); }
+        /* 当鼠标移入 widget 或通过 JS 添加 .show 时滑出到视口内 */
+        .music-widget.show, .music-widget:hover{ transform: translateX(0); }
         /* 小型折叠状态 body */
         .music-body{ height:0; overflow:hidden; transition:height 320ms ease }
         .music-body.open{ height:220px }
-        .music-popup{ position:fixed; right:22px; top:72px; z-index:11003; background:var(--card-bg); padding:10px 12px; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.12); display:none; min-width:240px }
-        .music-popup.show{ display:block }
-        .music-popup{ position:fixed; right:22px; top:72px; z-index:11003; background:var(--card-bg); padding:10px 12px; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.12); display:none; min-width:240px }
-        .music-popup.show{ display:block }
+        .music-popup{ position:fixed; right:22px; top:72px; z-index:11003; background:var(--card-bg); padding:10px 12px; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.12); display:block; min-width:240px; transform: translateX(calc(100% - 48px)); opacity:0; pointer-events:none; transition: transform 320ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease; }
+        .music-popup.show{ transform: translateX(0); opacity:1; pointer-events:auto }
         /* ensure numbers fit: keep moderate size; labels are bold */
         .runtime-widget .anniv-row .anniv-label{ font-size:13px; letter-spacing:0.2px; font-weight:700 }
         .runtime-widget .anniv-row .anniv-count{ font-size:16px; margin-left:12px; font-weight:800 }
@@ -158,38 +192,342 @@
                     document.addEventListener('keydown', keyHandler);
                     // remember to remove the handler when drawer closes
                     const observer = new MutationObserver(()=>{ if(!container.classList.contains('open')){ try{ document.removeEventListener('keydown', keyHandler); }catch(e){} observer.disconnect(); } }); observer.observe(container, { attributes:true, attributeFilter:['class'] });
-                } }
-
-                // navbarBar click / keyboard
-                if(navbarBar){ navbarBar.addEventListener('click', toggleDrawer); navbarBar.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key === ' '){ e.preventDefault(); toggleDrawer(); } }); }
-                if(windowMask) windowMask.addEventListener('click', closeDrawer);
-
-                // close drawer when a drawer link clicked (animated)
-                document.querySelectorAll('.drawer-navbar-item a').forEach(link=> link.addEventListener('click', ()=>{ closeDrawer(); }));
-
-                // navbar shrink on scroll
-                function onScroll(){ const y = window.scrollY || window.pageYOffset; if(y>50){ navbarContainer && navbarContainer.classList.add('shrink'); } else { navbarContainer && navbarContainer.classList.remove('shrink'); } }
-                window.addEventListener('scroll', onScroll); onScroll();
-
-                // tools: gear spin and hidden list
-                if(gearIcon){ var gearAnimation = anime({ targets: gearIcon, rotate: 360, duration: 4000, easing: 'linear', loop: true, autoplay: true });
-                    const btn = toggleToolsBtn;
-                    if(btn){ btn.addEventListener('mouseenter', ()=>{ gearAnimation.duration = 1500; }); btn.addEventListener('mouseleave', ()=>{ gearAnimation.duration = 4000; }); btn.addEventListener('click', ()=>{ hiddenToolsList.classList.toggle('show'); anime({ targets: btn, rotate: hiddenToolsList.classList.contains('show') ? 90 : 0, duration: 300, easing: 'easeOutExpo' }); }); }
-                }
-
-                // scroll percent animation
-                const scrollPercent = document.getElementById('scrollPercent');
-                window.addEventListener('scroll', ()=>{
-                    const scrollTop = window.scrollY;
-                    const scrollHeight = document.body.scrollHeight - window.innerHeight;
+                window.addEventListener("scroll", () => {
+                    const scrollTop = window.scrollY || window.pageYOffset;
+                    const scrollHeight = Math.max(0, document.body.scrollHeight - window.innerHeight);
                     const percent = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
-                    if(scrollPercent){ anime({ targets: scrollPercent, innerHTML: [parseInt(scrollPercent.textContent)||0, percent], duration: 200, easing: 'easeOutExpo', update: function(anim){ scrollPercent.textContent = Math.round(anim.animations[0].currentValue) + '%'; } }); scrollPercent.style.opacity = percent === 0 ? 0 : 1; }
+                    // 安全更新：避免传入带 '%' 的字符串导致动画库解析错误
+                    if(scrollPercent){
+                        const prev = parseInt(String(scrollPercent.textContent).replace(/[^0-9\-]/g, '')) || 0;
+                        const obj = { v: prev };
+                        anime({
+                            targets: obj,
+                            v: percent,
+                            round: 1,
+                            duration: 220,
+                            easing: 'easeOutExpo',
+                            update: function(){ scrollPercent.textContent = obj.v + '%'; }
+                        });
+                        scrollPercent.style.opacity = percent === 0 ? '0' : '1';
+                    }
+                });
+                const scrollPercent = document.getElementById('scrollPercent');
+                window.addEventListener("scroll", () => {
+                    const scrollTop = window.scrollY || window.pageYOffset;
+                    const scrollHeight = Math.max(0, document.body.scrollHeight - window.innerHeight);
+                    const percent = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
+                    // 安全更新：避免传入带 '%' 的字符串导致动画库解析错误
+                    if(scrollPercent){
+                        const prev = parseInt(String(scrollPercent.textContent).replace(/[^0-9\-]/g, '')) || 0;
+                        const obj = { v: prev };
+                        anime({
+                            targets: obj,
+                            v: percent,
+                            round: 1,
+                            duration: 220,
+                            easing: 'easeOutExpo',
+                            update: function(){ scrollPercent.textContent = obj.v + '%'; }
+                        });
+                        scrollPercent.style.opacity = percent === 0 ? '0' : '1';
+                    }
+                });
                 });
 
                 // keyboard: close drawer on ESC globally
-                document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ if(navbarDrawer && navbarDrawer.classList.contains('open')){ closeDrawer(); } const musicWidget = document.getElementById('musicWidget'); const musicBody = document.getElementById('musicBody'); if(musicBody && musicBody.classList.contains('open')){ musicBody.classList.remove('open'); const handle = document.getElementById('musicHandle'); handle && handle.setAttribute('aria-expanded','false'); } } });
+                document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ if(navbarDrawer && navbarDrawer.classList.contains('open')){ closeDrawer(); } const musicWidget = document.getElementById('musicWidget'); const musicBody = document.getElementById('musicBody'); if(musicBody && musicBody.classList.contains('open')){ musicBody.classList.remove('open'); if(musicWidget) { musicWidget.classList.remove('show'); musicWidget.setAttribute('aria-hidden','true'); } } } });
             });
         </script>
+
+        <style>
+            /* 修复音乐播放器卡片悬停和点击问题 */
+            .music-widget {
+                position: fixed;
+                right: 18px;
+                top: 72px;
+                width: 320px;
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: var(--shadow);
+                background: var(--card-bg);
+                z-index: 11001;
+                transform: translateX(calc(100% - 48px));
+                transition: transform 320ms cubic-bezier(.2,.9,.2,1);
+                pointer-events: auto;
+                max-height: 70vh; /* 限制最大高度 */
+            }
+            
+            .music-widget.show,
+            .music-widget:hover {
+                transform: translateX(0);
+            }
+            
+            /* 确保音乐播放器内部元素不干扰点击 */
+            .music-widget * {
+                pointer-events: auto;
+            }
+            
+            /* 修复音乐播放器内容区域 */
+            .music-body {
+                height: 0;
+                overflow: hidden;
+                transition: height 320ms ease;
+                position: relative;
+            }
+            
+            .music-body.open {
+                height: 220px;
+                min-height: 220px;
+            }
+            
+            .music-body iframe,
+            .music-body .aplayer {
+                width: 100%;
+                height: 220px;
+                border: none;
+                display: block;
+                position: relative;
+                z-index: 1;
+            }
+            
+            /* 修复播放器控制条的点击区域 */
+            .aplayer .aplayer-info,
+            .aplayer .aplayer-controller,
+            .aplayer .aplayer-pic,
+            .aplayer .aplayer-body {
+                pointer-events: auto !important;
+            }
+            
+            /* 防止播放器控制条事件冒泡到卡片 */
+            .aplayer {
+                pointer-events: auto;
+            }
+            
+            /* 修复鼠标离开时的计时器逻辑 */
+            .music-widget {
+                position: fixed;
+                right: 18px;
+                top: 72px;
+                width: 320px;
+                z-index: 11001;
+                transition: transform 320ms cubic-bezier(.2,.9,.2,1);
+            }
+            
+            /* 确保音乐头部点击区域正确 */
+            .music-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+                padding: 8px 12px;
+                cursor: pointer;
+                background: var(--card-bg);
+                position: relative;
+                z-index: 2;
+            }
+            
+            /* 添加修复的 JavaScript 代码 */
+    </style>
+
+    <script>
+        // 修复音乐播放器卡片交互问题
+        (function fixMusicWidgetInteraction() {
+            console.log('正在修复音乐播放器交互...');
+            
+            // 确保音乐播放器卡片和头部存在
+            const musicWidget = document.getElementById('musicWidget');
+            const musicBody = document.getElementById('musicBody');
+            const musicToggle = document.getElementById('musicToggle');
+            
+            if (!musicWidget || !musicBody || !musicToggle) {
+                console.warn('音乐播放器元素未找到');
+                setTimeout(fixMusicWidgetInteraction, 500);
+                return;
+            }
+            
+            // 清理可能存在的重复事件监听器
+            const newToggle = musicToggle.cloneNode(true);
+            musicToggle.parentNode.replaceChild(newToggle, musicToggle);
+            
+            // 重新获取元素
+            const newMusicToggle = document.getElementById('musicToggle');
+            const newMusicWidget = document.getElementById('musicWidget');
+            const newMusicBody = document.getElementById('musicBody');
+            
+            // 控制卡片状态的变量
+            let isMouseInWidget = false;
+            let isManuallyOpened = false;
+            let leaveTimer = null;
+            
+            // 展开卡片
+            function openWidget() {
+                newMusicBody.classList.add('open');
+                newMusicWidget.classList.add('show');
+                newMusicWidget.setAttribute('aria-hidden', 'false');
+                newMusicToggle.setAttribute('aria-expanded', 'true');
+                isManuallyOpened = true;
+                clearTimeout(leaveTimer);
+            }
+            
+            // 收起卡片
+            function closeWidget() {
+                // 只有不是手动打开且鼠标不在卡片内时才关闭
+                if (!isManuallyOpened && !isMouseInWidget) {
+                    newMusicBody.classList.remove('open');
+                    newMusicWidget.classList.remove('show');
+                    newMusicWidget.setAttribute('aria-hidden', 'true');
+                    newMusicToggle.setAttribute('aria-expanded', 'false');
+                }
+            }
+            
+            // 切换卡片状态
+            function toggleWidget() {
+                if (newMusicBody.classList.contains('open')) {
+                    newMusicBody.classList.remove('open');
+                    newMusicWidget.classList.remove('show');
+                    newMusicWidget.setAttribute('aria-hidden', 'true');
+                    newMusicToggle.setAttribute('aria-expanded', 'false');
+                    isManuallyOpened = false;
+                } else {
+                    openWidget();
+                }
+            }
+            
+            // 头部点击事件
+            newMusicToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleWidget();
+            });
+            
+            // 键盘支持
+            newMusicToggle.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    toggleWidget();
+                }
+            });
+            
+            // 鼠标进入卡片
+            newMusicWidget.addEventListener('mouseenter', function() {
+                isMouseInWidget = true;
+                clearTimeout(leaveTimer);
+                // 鼠标进入时自动展开
+                if (!newMusicBody.classList.contains('open')) {
+                    newMusicWidget.classList.add('show');
+                    newMusicWidget.setAttribute('aria-hidden', 'false');
+                }
+            });
+            
+            // 鼠标离开卡片
+            newMusicWidget.addEventListener('mouseleave', function(e) {
+                isMouseInWidget = false;
+                clearTimeout(leaveTimer);
+                
+                // 检查鼠标是否真的离开了卡片
+                const relatedTarget = e.relatedTarget;
+                if (relatedTarget && newMusicWidget.contains(relatedTarget)) {
+                    return; // 鼠标还在卡片内部
+                }
+                
+                // 延迟关闭，避免误操作
+                leaveTimer = setTimeout(() => {
+                    if (!isManuallyOpened && !isMouseInWidget) {
+                        closeWidget();
+                    }
+                }, 300);
+            });
+            
+            // 全局 ESC 关闭
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (newMusicBody.classList.contains('open')) {
+                        newMusicBody.classList.remove('open');
+                        newMusicWidget.classList.remove('show');
+                        newMusicWidget.setAttribute('aria-hidden', 'true');
+                        newMusicToggle.setAttribute('aria-expanded', 'false');
+                        isManuallyOpened = false;
+                    }
+                }
+            });
+            
+            // 点击页面其他地方关闭卡片（如果鼠标没有在卡片内）
+            document.addEventListener('click', function(e) {
+                if (!newMusicWidget.contains(e.target) && 
+                    !newMusicToggle.contains(e.target) &&
+                    isManuallyOpened) {
+                    newMusicBody.classList.remove('open');
+                    newMusicWidget.classList.remove('show');
+                    newMusicWidget.setAttribute('aria-hidden', 'true');
+                    newMusicToggle.setAttribute('aria-expanded', 'false');
+                    isManuallyOpened = false;
+                }
+            });
+            
+            console.log('音乐播放器交互修复完成');
+            
+            // 修复 APlayer 加载后的事件冲突
+            function fixAPlayerInteractions() {
+                // 等待 APlayer 加载
+                const checkInterval = setInterval(() => {
+                    const aplayer = document.querySelector('.aplayer');
+                    if (aplayer) {
+                        clearInterval(checkInterval);
+                        
+                        // 防止 APlayer 事件冒泡到音乐卡片
+                        aplayer.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                        });
+                        
+                        aplayer.addEventListener('touchstart', function(e) {
+                            e.stopPropagation();
+                        });
+                        
+                        console.log('APlayer 交互修复完成');
+                    }
+                }, 500);
+                
+                // 超时停止检查
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                }, 5000);
+            }
+            
+            // 延迟执行 APlayer 修复，确保页面完全加载
+            setTimeout(fixAPlayerInteractions, 1000);
+        })();
+        
+        // 修复卡片悬停动画
+        (function fixWidgetHover() {
+            const musicWidget = document.getElementById('musicWidget');
+            if (!musicWidget) return;
+            
+            // 确保卡片初始位置正确
+            musicWidget.style.transform = 'translateX(calc(100% - 48px))';
+            
+            // 添加修复样式
+            const style = document.createElement('style');
+            style.textContent = `
+                .music-widget {
+                    will-change: transform;
+                    backface-visibility: hidden;
+                    -webkit-backface-visibility: hidden;
+                }
+                
+                .music-widget .aplayer {
+                    pointer-events: auto !important;
+                }
+                
+                .music-widget .aplayer * {
+                    pointer-events: auto !important;
+                }
+                
+                .music-body .aplayer {
+                    touch-action: manipulation;
+                }
+            `;
+            document.head.appendChild(style);
+        })();
+    </script>
+
     <style>
         /* 引入本地 SJ-Narrow 字体（Regular / Light）供标题与强调使用 */
         @font-face{
@@ -1681,23 +2019,25 @@
 
             document.addEventListener('DOMContentLoaded', ()=>{
                 odometer_init(); updateRuntimeAndAnniv(); setInterval(updateRuntimeAndAnniv, 1000);
-                // music toggle
+                // music toggle: clicking header toggles body; widget hover also reveals card
                 const musicToggle = document.getElementById('musicToggle');
                 const musicBody = document.getElementById('musicBody');
+                const musicWidget = document.getElementById('musicWidget');
                 if(musicToggle && musicBody){
                     musicToggle.addEventListener('click', ()=>{
                         const open = musicBody.classList.toggle('open');
                         musicToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+                        if(musicWidget){ if(open){ musicWidget.classList.add('show'); musicWidget.setAttribute('aria-hidden','false'); } else { musicWidget.classList.remove('show'); musicWidget.setAttribute('aria-hidden','true'); } }
+                        if(open){ try{ trapFocusIn && trapFocusIn(musicWidget); }catch(e){} }
                     });
                 }
-                // 顶部 handle 点击切换播放器展开（同时支持悬停展开）
-                const musicHandle = document.getElementById('musicHandle');
-                if(musicHandle){
-                    musicHandle.addEventListener('click', ()=>{
-                        const body = document.getElementById('musicBody'); if(!body) return;
-                        const open = body.classList.toggle('open');
-                        musicHandle.setAttribute('aria-expanded', open ? 'true' : 'false');
-                    });
+                if(musicWidget){
+                    // hover reveal
+                    let leaveTimer = null;
+                    musicWidget.addEventListener('mouseenter', ()=>{ clearTimeout(leaveTimer); musicWidget.classList.add('show'); musicWidget.setAttribute('aria-hidden','false'); });
+                    musicWidget.addEventListener('mouseleave', ()=>{ leaveTimer = setTimeout(()=>{ if(musicBody && !musicBody.classList.contains('open')){ musicWidget.classList.remove('show'); musicWidget.setAttribute('aria-hidden','true'); } }, 420); });
+                    // support keyboard Enter/Space on header
+                    musicToggle && musicToggle.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); musicToggle.click(); } });
                 }
 
                 // 初始化 Meting/APlayer：右上滑入卡片 + 首次随机自动播放（音量 15%） + 切歌弹窗
@@ -1708,15 +2048,25 @@
 
                     function escapeHtmlLocal(s){ return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-                    function showMusicPopup(track){
+                    function showMusicPopup(track, opts){
                         if(!track) return;
+                        opts = opts || {};
                         const title = track.name || track.title || '未知曲目';
                         const artist = (track.artist && (typeof track.artist==='string'?track.artist: Array.isArray(track.artist)? track.artist.map(a=>a.name||a).join(', '): JSON.stringify(track.artist))) || track.author || '';
                         const popup = document.getElementById('musicPopup') || (function(){ const p=document.createElement('div'); p.id='musicPopup'; p.className='music-popup'; document.body.appendChild(p); return p; })();
-                        popup.innerHTML = `<div style="font-weight:700;margin-bottom:6px">即将播放：${escapeHtmlLocal(title)}</div><div style="font-size:13px;color:var(--muted)">${escapeHtmlLocal(artist||'未知')}</div>`;
+                        // clear any previous hide timer
+                        try{ if(popup.__hideTimer) { clearTimeout(popup.__hideTimer); popup.__hideTimer = null; } }catch(e){}
+                        popup.innerHTML = `<div style="font-weight:700;margin-bottom:6px">即将播放：${escapeHtmlLocal(title)}</div><div style="font-size:13px;color:var(--muted)">演唱/作者：${escapeHtmlLocal(artist||'未知')}</div>`;
+                        if(opts.showEnableBtn){ const btn = document.createElement('button'); btn.className='music-enable-btn'; btn.style.cssText='margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:var(--primary-blue);color:#fff;cursor:pointer'; btn.textContent='启用声音并播放'; btn.addEventListener('click', ()=>{ try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play === 'function'){ a.play().catch(()=>{}); } popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); }catch(e){} }); popup.appendChild(btn); }
+                        // force reflow before adding class to ensure CSS transition applies
+                        void popup.offsetWidth;
                         popup.classList.add('show');
-                        // 滑出并在 3 秒后收起（并尝试继续播放以应对自动播放策略）
-                        setTimeout(()=>{ popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play==='function') a.play(); }catch(e){} }, 3000);
+                        if(!opts.persistent){
+                            popup.__hideTimer = setTimeout(()=>{
+                                try{ popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); }catch(e){}
+                                try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play==='function') a.play(); }catch(e){}
+                            }, opts.timeout || 3000);
+                        }
                     }
 
                     function whenAPlayerReady(cb){
@@ -1734,7 +2084,8 @@
                         // 当播放事件触发，显示弹窗（切歌与首次播放都会触发）
                         try{ if(typeof a.on === 'function'){ a.on('play', ()=>{ try{ const idx = a.index || 0; const t = (a.list && a.list[idx]) || {}; // 显示即将播放信息
                                     // 弹窗同时确保播放器卡片可见
-                                    const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t);
+                                    const widget = document.querySelector('.music-widget'); if(widget){ widget.classList.add('show'); try{ trapFocusIn && trapFocusIn(widget); }catch(e){} }
+                                    showMusicPopup(t);
                                 }catch(e){} }); } }catch(e){}
 
                         // 首次访问随机播放一次（仅尝试一次，受浏览器策略影响）
@@ -1743,19 +2094,24 @@
                                 const count = a.list.length || 1; const rnd = Math.floor(Math.random() * count);
                                 try{ a.index = rnd; }catch(e){}
                                 try{ if(typeof a.switch === 'function') a.switch(rnd); }catch(e){}
-                                try{ a.play(); }catch(e){}
-                                // 展示弹窗
-                                const t = (a.list && a.list[rnd]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t);
+                                // 尝试播放并根据 Promise 结果决定是否展示启用按钮
+                                var playResult = null;
+                                try{ playResult = (typeof a.play === 'function') ? a.play() : null; }catch(e){}
+                                const t = (a.list && a.list[rnd]) || {};
+                                const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show');
+                                if(playResult && typeof playResult.then === 'function'){
+                                    playResult.then(function(){ showMusicPopup(t); }).catch(function(){ showMusicPopup(t, { persistent: true, showEnableBtn: true, timeout: 0 }); });
+                                } else { showMusicPopup(t); }
                                 localStorage.setItem(FLAG, '1');
                             }
                         }catch(e){}
 
-                        // handle：点击切换展开（同时支持悬停展开 & 键盘 Enter/Space）
-                        const handle = document.getElementById('musicHandle'); const widget = document.getElementById('musicWidget'); const body = document.getElementById('musicBody');
-                        if(handle && widget){
-                            function toggleMusicWidget(){ if(!body || !widget) return; const open = body.classList.toggle('open'); if(open){ widget.classList.add('show'); widget.setAttribute('aria-hidden','false'); } else { widget.classList.remove('show'); widget.setAttribute('aria-hidden','true'); } handle.setAttribute('aria-expanded', open ? 'true' : 'false'); }
-                            handle.addEventListener('click', toggleMusicWidget);
-                            handle.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleMusicWidget(); } });
+                        // widget control: clicking header toggles body; widget show state kept in sync
+                        const widget = document.getElementById('musicWidget'); const body = document.getElementById('musicBody'); const headerToggle = document.getElementById('musicToggle');
+                        if(headerToggle && widget && body){
+                            function toggleMusicWidget(){ if(!body || !widget) return; const open = body.classList.toggle('open'); if(open){ widget.classList.add('show'); widget.setAttribute('aria-hidden','false'); } else { widget.classList.remove('show'); widget.setAttribute('aria-hidden','true'); } headerToggle.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+                            headerToggle.addEventListener('click', toggleMusicWidget);
+                            headerToggle.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleMusicWidget(); } });
                         }
                     });
                 })();
@@ -1763,10 +2119,7 @@
         })();
     </script>
 
-    <!-- 右上隐藏控件：音乐 handle + 音乐播放器 -->
-    <div class="music-handle" id="musicHandle" role="button" tabindex="0" title="音乐播放器" aria-label="音乐播放器控制" aria-controls="musicWidget" aria-expanded="false">
-        <i class="fa fa-music" aria-hidden="true"></i>
-    </div>
+    <!-- 右上隐藏控件：音乐播放器卡片（鼠标悬停或点击头部展开） -->
     <div class="music-widget" id="musicWidget" aria-label="音乐播放器" role="region" aria-hidden="true" tabindex="-1">
         <div class="music-header" id="musicToggle" role="button" aria-expanded="false">
             <div style="display:flex;align-items:center;gap:10px">
@@ -1776,7 +2129,7 @@
             <div style="font-size:12px;color:var(--muted)">悬停展开或点击控制</div>
         </div>
         <div class="music-body" id="musicBody">
-            <meting-js server="netease" type="playlist" id="2639364381"></meting-js>
+            <meting-js server="netease" type="playlist" id="5034562952"></meting-js>
         </div>
     </div>
 
@@ -1832,5 +2185,32 @@
             // run after load to capture possible CSP/network blocking
             window.addEventListener('load', function(){ setTimeout(testAnime, 200); });
         })();
+    </script>
+    <script>
+        // Global focus-trap utility (lightweight) used by navbar drawer and music widget
+        function trapFocusIn(container){
+            if(!container) return;
+            try{
+                var previous = document.activeElement;
+                var focusables = container.querySelectorAll('a, button, input, textarea, select, [tabindex]:not([tabindex="-1"])');
+                if(!focusables || focusables.length === 0) return;
+                focusables[0].focus();
+                var first = focusables[0];
+                var last = focusables[focusables.length - 1];
+                function keyHandler(e){
+                    if(e.key === 'Tab'){
+                        if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); }
+                        else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); }
+                    } else if(e.key === 'Escape' || e.key === 'Esc'){
+                        e.preventDefault(); // close logical container if it supports class toggles
+                        try{ container.classList.remove('open'); container.classList.remove('show'); }catch(err){}
+                        document.removeEventListener('keydown', keyHandler);
+                    }
+                }
+                document.addEventListener('keydown', keyHandler);
+                var mo = new MutationObserver(function(){ if(!container.classList.contains('open') && !container.classList.contains('show')){ try{ document.removeEventListener('keydown', keyHandler); }catch(e){} mo.disconnect(); } });
+                mo.observe(container, { attributes: true, attributeFilter: ['class'] });
+            }catch(e){}
+        }
     </script>
 </html>

@@ -20,47 +20,91 @@
         .top-nav{display:flex;justify-content:space-between;align-items:center;max-width:1100px;margin:0 auto 18px;padding:12px;background:#fff;border-radius:10px;box-shadow:0 8px 26px rgba(0,0,0,0.06)}
         .top-nav a{margin-left:12px;text-decoration:none;color:#556}
         /* 隐藏式顶部音乐播放器样式（靠右边缘，仅留 tab） */
-        .music-handle{ position:fixed; right:18px; top:18px; width:44px; height:44px; border-radius:10px; background:#fff; display:flex; align-items:center; justify-content:center; box-shadow:0 12px 30px rgba(0,0,0,0.12); z-index:11002; cursor:pointer }
-        .music-handle i{ font-size:18px; color:#556 }
-        .music-widget{ position:fixed; right:18px; top:72px; width:320px; border-radius:12px; overflow:hidden; box-shadow:0 12px 30px rgba(0,0,0,0.12); background:#fff; z-index:11001; transform: translateX(calc(100% - 48px)); transition:transform 320ms cubic-bezier(.2,.9,.2,1); }
-        .music-handle:hover + .music-widget, .music-widget.show, .music-widget:hover{ transform: translateX(0); }
+        .music-widget{ position:fixed; right:18px; top:72px; width:320px; border-radius:12px; overflow:hidden; box-shadow:0 12px 30px rgba(0,0,0,0.12); background:#fff; z-index:11001; transform: translateX(calc(100% - 48px)); transition:transform 320ms cubic-bezier(.2,.9,.2,1); pointer-events:auto }
+        .music-widget.show, .music-widget:hover{ transform: translateX(0); }
         .music-body{ height:0; overflow:hidden; transition:height 320ms ease }
         .music-body.open{ height:220px }
         .music-body{ height:0; overflow:hidden; transition:height 320ms ease }
         .music-body.open{ height:220px }
-        .music-popup{ position:fixed; right:22px; top:72px; z-index:11003; background:#fff; padding:10px 12px; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.12); display:none; min-width:240px }
-        .music-popup.show{ display:block }
+        .music-popup{ position:fixed; right:22px; top:72px; z-index:11003; background:#fff; padding:10px 12px; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.12); display:block; min-width:240px; transform: translateX(calc(100% - 48px)); opacity:0; pointer-events:none; transition: transform 320ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease; }
+        .music-popup.show{ transform: translateX(0); opacity:1; pointer-events:auto }
     </style>
     <style>
         /* Sync navbar and right-side tools with index.html (example.html parity) */
         .navbar-container {
             position: sticky;
-            top: 0;
-            z-index: 1000;
-            width: 100%;
-            background-color: #fff; /* will be overridden by card-bg variable if present */
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(0,0,0,0.08);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            transition: background-color 0.3s ease, padding 0.3s ease, box-shadow 0.3s ease;
-        }
-        .navbar-container.shrink { padding: 0.25rem 0; box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
-        .navbar-content { display:flex; justify-content:space-between; align-items:center; padding:0.75rem 1.5rem; max-width:1200px; margin:0 auto; }
-        .desktop .navbar-list { display:flex; list-style:none; gap:1.5rem; }
-        .navbar-item a { display:inline-flex; align-items:center; gap:0.5rem; color:#556; text-decoration:none; padding:0.5rem 0; transition:color 0.2s ease; }
-        .navbar-item a::after { content:''; position:absolute; bottom:0; left:0; width:0; height:2px; background-color:var(--primary-blue); transition:width 0.3s ease; }
-        .navbar-item a.active, .navbar-item a:hover { color:var(--primary-blue); }
-        .navbar-item a.active::after, .navbar-item a:hover::after { width:100%; }
-        .mobile { display:none; align-items:center; gap:1rem; }
-        .icon-item { color:#556; font-size:1.25rem; cursor:pointer; padding:0.5rem; border-radius:50%; }
-        .icon-item:hover { color:var(--primary-blue); background-color: rgba(0,0,0,0.03); }
-        .navbar-drawer { position:fixed; top:0; left:-100%; width:100%; max-width:320px; height:100vh; background-color:var(--card-bg); z-index:1001; transition:left 0.3s cubic-bezier(0.4,0,0.2,1); padding:2rem 1.5rem; overflow-y:auto; box-shadow:0 6px 16px rgba(0,0,0,0.06); }
-        .navbar-drawer.open { left:0; }
-        .drawer-navbar-list { list-style:none; display:flex; flex-direction:column; gap:0.5rem; }
-        .drawer-navbar-item a { display:flex; align-items:center; justify-content:space-between; color:var(--text); text-decoration:none; padding:1rem; border-radius:8px; border:1px solid transparent; }
-        .drawer-navbar-item a:hover, .drawer-navbar-item a.active { color:var(--primary-blue); background-color: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.06); }
-        .window-mask { position:fixed; top:0; left:0; width:100%; height:100%; background-color: rgba(0,0,0,0.3); z-index:1000; opacity:0; pointer-events:none; transition:opacity 0.3s ease; }
-        .window-mask.show { opacity:1; pointer-events:all; }
+            <script>
+                document.addEventListener('DOMContentLoaded', ()=>{
+                    const t = document.getElementById('musicToggle'); const b = document.getElementById('musicBody'); const w = document.getElementById('musicWidget');
+
+                    // Lightweight focus trap for small widgets
+                    function trapFocusIn(container){
+                        if(!container) return ()=>{};
+                        const selector = 'a[href], button, textarea, input, select, [tabindex]:not([tabindex="-1"])';
+                        const nodes = Array.from(container.querySelectorAll(selector)).filter(n=>!n.hasAttribute('disabled'));
+                        if(nodes.length === 0) return ()=>{};
+                        const first = nodes[0], last = nodes[nodes.length-1];
+                        function keyHandler(e){
+                            if(e.key === 'Tab'){
+                                if(e.shiftKey){ if(document.activeElement === first){ e.preventDefault(); last.focus(); } }
+                                else { if(document.activeElement === last){ e.preventDefault(); first.focus(); } }
+                            } else if(e.key === 'Escape'){
+                                if(container.classList.contains('show')){
+                                    container.classList.remove('show'); if(b) b.classList.remove('open'); container.setAttribute('aria-hidden','true');
+                                }
+                            }
+                        }
+                        container.addEventListener('keydown', keyHandler);
+                        return ()=>{ container.removeEventListener('keydown', keyHandler); };
+                    }
+
+                    let releaseTrap = ()=>{};
+
+                    if(t && b){
+                        t.addEventListener('click', ()=>{
+                            const open = b.classList.toggle('open'); t.setAttribute('aria-expanded', open);
+                            if(w){
+                                if(open){
+                                    w.classList.add('show'); w.setAttribute('aria-hidden','false');
+                                    // trap focus shortly after opening
+                                    setTimeout(()=>{ try{ if(releaseTrap) releaseTrap(); releaseTrap = trapFocusIn(w); const f = w.querySelector('button, a, [tabindex]'); if(f) f.focus(); }catch(e){} }, 50);
+                                } else {
+                                    w.classList.remove('show'); w.setAttribute('aria-hidden','true'); if(releaseTrap){ releaseTrap(); releaseTrap = ()=>{}; }
+                                }
+                            }
+                        });
+                        t.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t.click(); } });
+                    }
+
+                    if(w){
+                        let leaveTimer=null;
+                        w.addEventListener('mouseenter', ()=>{ clearTimeout(leaveTimer); w.classList.add('show'); w.setAttribute('aria-hidden','false'); });
+                        w.addEventListener('mouseleave', ()=>{ leaveTimer=setTimeout(()=>{ if(b && !b.classList.contains('open')){ w.classList.remove('show'); w.setAttribute('aria-hidden','true'); if(releaseTrap){ releaseTrap(); releaseTrap = ()=>{}; } } },420); });
+                        // close widget with Escape key
+                        document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ if(w.classList.contains('show')){ w.classList.remove('show'); b && b.classList.remove('open'); w.setAttribute('aria-hidden','true'); if(releaseTrap){ releaseTrap(); releaseTrap = ()=>{}; } } }});
+                    }
+
+                    // Meting/APlayer popup for Documents
+                    // 初始化 Meting/APlayer：右上滑入卡片 + 首次随机自动播放（音量 15%） + 切歌弹窗
+                    (function initMetingPlayer(){
+                        const FLAG = 'hanasaki_music_autoplay_v1';
+                        const metingEl = document.querySelector('meting-js'); if(!metingEl) return;
+                        function escapeHtmlLocal(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+                            function showMusicPopup(track, opts){ if(!track) return; opts = opts || {}; const title = track.name || track.title || '未知曲目'; const artist = (track.artist && (typeof track.artist==='string'?track.artist: Array.isArray(track.artist)? track.artist.map(a=>a.name||a).join(', '): JSON.stringify(track.artist))) || track.author || ''; const popup = document.getElementById('musicPopup') || (function(){ const p=document.createElement('div'); p.id='musicPopup'; p.className='music-popup'; document.body.appendChild(p); return p; })(); popup.innerHTML = `<div style="font-weight:700;margin-bottom:6px">即将播放：${escapeHtmlLocal(title)}</div><div style="font-size:13px;color:#667">演唱/作者：${escapeHtmlLocal(artist||'未知')}</div>`;
+                                if(opts.showEnableBtn){ const btn = document.createElement('button'); btn.className='music-enable-btn'; btn.style.cssText='margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:var(--primary-blue);color:#fff;cursor:pointer'; btn.textContent='启用声音并播放'; btn.addEventListener('click', ()=>{ try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play === 'function'){ a.play().catch(()=>{}); } popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); }catch(e){} }); popup.appendChild(btn); }
+                                popup.classList.add('show'); setTimeout(()=>{ if(!opts.persistent){ popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play==='function') a.play(); }catch(e){} } }, opts.timeout || 3000); }
+                        function whenAPlayerReady(cb){ const a = metingEl.aplayer || metingEl._aplayer || (window.APlayer && window.APlayer.instances && window.APlayer.instances[0]); if(!a) return setTimeout(()=>whenAPlayerReady(cb),200); if(!a.list || a.list.length===0) return setTimeout(()=>whenAPlayerReady(cb),200); cb(a); }
+                            whenAPlayerReady((a)=>{
+                            try{ if(typeof a.setVolume === 'function') a.setVolume(0.15); else if(typeof a.volume === 'function') a.volume(0.15); else if(a.audio) a.audio.volume = 0.15; }catch(e){}
+                            try{ if(typeof a.on === 'function'){ a.on('play', ()=>{ try{ const idx = a.index || 0; const t = (a.list && a.list[idx]) || {}; const widget = document.querySelector('.music-widget'); if(widget) { widget.classList.add('show'); widget.setAttribute('aria-hidden','false'); try{ if(releaseTrap) releaseTrap(); releaseTrap = trapFocusIn(widget); }catch(e){} } showMusicPopup(t); }catch(e){} }); } }catch(e){}
+                            try{ if(!localStorage.getItem(FLAG)){ const count = a.list.length || 1; const rnd = Math.floor(Math.random()*count); try{ a.index = rnd; }catch(e){} try{ if(typeof a.switch === 'function') a.switch(rnd); }catch(e){}
+                                const playResult = (typeof a.play === 'function') ? a.play() : null; const t = (a.list && a.list[rnd]) || {}; const widget = document.querySelector('.music-widget'); if(widget){ widget.classList.add('show'); widget.setAttribute('aria-hidden','false'); try{ if(releaseTrap) releaseTrap(); releaseTrap = trapFocusIn(widget); }catch(e){} }
+                                if(playResult && typeof playResult.then === 'function'){ playResult.then(()=>{ showMusicPopup(t); }).catch(()=>{ showMusicPopup(t, { persistent: true, showEnableBtn: true, timeout: 0 }); }); } else { showMusicPopup(t); }
+                                localStorage.setItem(FLAG,'1'); } }catch(e){}
+                        });
+                    })();
+                });
+            </script>
 
         /* position tools above bottom widget-stack */
         .right-side-tools-container { position: fixed; right: 18px; bottom: 120px; z-index: 11002; }
@@ -148,10 +192,7 @@
         <p>此页面暂时为空，但顶部导航已提供“更新日志”入口以返回并打开更新日志视图。</p>
     </main>
     <!-- 音乐播放器（文档页也提供） -->
-    <div class="music-handle" id="musicHandle" role="button" title="音乐播放器" aria-label="音乐播放器控制">
-        <i class="fa fa-music"></i>
-    </div>
-    <div class="music-widget" id="musicWidget">
+    <div class="music-widget" id="musicWidget" role="region" aria-label="音乐播放器" aria-hidden="true" tabindex="-1">
         <div class="music-header" id="musicToggle" role="button" aria-expanded="false">
             <div style="display:flex;align-items:center;gap:10px"><i class="fa fa-music"></i><div style="font-weight:700">音乐播放器</div></div>
             <div style="font-size:12px;color:#667">悬停展开或点击控制</div>
@@ -162,20 +203,24 @@
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', ()=>{
-            const t = document.getElementById('musicToggle'); const b = document.getElementById('musicBody'); if(t && b){ t.addEventListener('click', ()=>{ b.classList.toggle('open'); t.setAttribute('aria-expanded', b.classList.contains('open')); }); }
-            const handle = document.getElementById('musicHandle'); if(handle){ handle.addEventListener('click', ()=>{ const body = document.getElementById('musicBody'); if(!body) return; const open = body.classList.toggle('open'); handle.setAttribute('aria-expanded', open ? 'true':'false'); }); }
+            const t = document.getElementById('musicToggle'); const b = document.getElementById('musicBody'); const w = document.getElementById('musicWidget'); if(t && b){ t.addEventListener('click', ()=>{ const open = b.classList.toggle('open'); t.setAttribute('aria-expanded', open); if(w){ if(open){ w.classList.add('show'); w.setAttribute('aria-hidden','false'); } else { w.classList.remove('show'); w.setAttribute('aria-hidden','true'); } } }); t.addEventListener('keydown',(e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); t.click(); } }); }
+            if(w){ let leaveTimer=null; w.addEventListener('mouseenter', ()=>{ clearTimeout(leaveTimer); w.classList.add('show'); w.setAttribute('aria-hidden','false'); }); w.addEventListener('mouseleave', ()=>{ leaveTimer=setTimeout(()=>{ if(b && !b.classList.contains('open')){ w.classList.remove('show'); w.setAttribute('aria-hidden','true'); } },420); }); }
             // Meting/APlayer popup for Documents
             // 初始化 Meting/APlayer：右上滑入卡片 + 首次随机自动播放（音量 15%） + 切歌弹窗
             (function initMetingPlayer(){
                 const FLAG = 'hanasaki_music_autoplay_v1';
                 const metingEl = document.querySelector('meting-js'); if(!metingEl) return;
                 function escapeHtmlLocal(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-                function showMusicPopup(track){ if(!track) return; const title = track.name || track.title || '未知曲目'; const artist = (track.artist && (typeof track.artist==='string'?track.artist: Array.isArray(track.artist)? track.artist.map(a=>a.name||a).join(', '): JSON.stringify(track.artist))) || track.author || ''; const popup = document.getElementById('musicPopup') || (function(){ const p=document.createElement('div'); p.id='musicPopup'; p.className='music-popup'; document.body.appendChild(p); return p; })(); popup.innerHTML = `<div style="font-weight:700;margin-bottom:6px">即将播放：${escapeHtmlLocal(title)}</div><div style="font-size:13px;color:#667">演唱/作者：${escapeHtmlLocal(artist||'未知')}</div>`; popup.classList.add('show'); setTimeout(()=>{ popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play==='function') a.play(); }catch(e){} },3000); }
+                    function showMusicPopup(track, opts){ if(!track) return; opts = opts || {}; const title = track.name || track.title || '未知曲目'; const artist = (track.artist && (typeof track.artist==='string'?track.artist: Array.isArray(track.artist)? track.artist.map(a=>a.name||a).join(', '): JSON.stringify(track.artist))) || track.author || ''; const popup = document.getElementById('musicPopup') || (function(){ const p=document.createElement('div'); p.id='musicPopup'; p.className='music-popup'; document.body.appendChild(p); return p; })(); popup.innerHTML = `<div style="font-weight:700;margin-bottom:6px">即将播放：${escapeHtmlLocal(title)}</div><div style="font-size:13px;color:#667">演唱/作者：${escapeHtmlLocal(artist||'未知')}</div>`;
+                        if(opts.showEnableBtn){ const btn = document.createElement('button'); btn.className='music-enable-btn'; btn.style.cssText='margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:var(--primary-blue);color:#fff;cursor:pointer'; btn.textContent='启用声音并播放'; btn.addEventListener('click', ()=>{ try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play === 'function'){ a.play().catch(()=>{}); } popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); }catch(e){} }); popup.appendChild(btn); }
+                        popup.classList.add('show'); setTimeout(()=>{ if(!opts.persistent){ popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play==='function') a.play(); }catch(e){} } }, opts.timeout || 3000); }
                 function whenAPlayerReady(cb){ const a = metingEl.aplayer || metingEl._aplayer || (window.APlayer && window.APlayer.instances && window.APlayer.instances[0]); if(!a) return setTimeout(()=>whenAPlayerReady(cb),200); if(!a.list || a.list.length===0) return setTimeout(()=>whenAPlayerReady(cb),200); cb(a); }
-                whenAPlayerReady((a)=>{
+                    whenAPlayerReady((a)=>{
                     try{ if(typeof a.setVolume === 'function') a.setVolume(0.15); else if(typeof a.volume === 'function') a.volume(0.15); else if(a.audio) a.audio.volume = 0.15; }catch(e){}
                     try{ if(typeof a.on === 'function'){ a.on('play', ()=>{ try{ const idx = a.index || 0; const t = (a.list && a.list[idx]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t); }catch(e){} }); } }catch(e){}
-                    try{ if(!localStorage.getItem(FLAG)){ const count = a.list.length || 1; const rnd = Math.floor(Math.random()*count); try{ a.index = rnd; }catch(e){} try{ if(typeof a.switch === 'function') a.switch(rnd); }catch(e){} try{ a.play(); }catch(e){} const t = (a.list && a.list[rnd]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t); localStorage.setItem(FLAG,'1'); } }catch(e){}
+                    try{ if(!localStorage.getItem(FLAG)){ const count = a.list.length || 1; const rnd = Math.floor(Math.random()*count); try{ a.index = rnd; }catch(e){} try{ if(typeof a.switch === 'function') a.switch(rnd); }catch(e){}
+                        const playResult = (typeof a.play === 'function') ? a.play() : null; const t = (a.list && a.list[rnd]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); if(playResult && typeof playResult.then === 'function'){ playResult.then(()=>{ showMusicPopup(t); }).catch(()=>{ showMusicPopup(t, { persistent: true, showEnableBtn: true, timeout: 0 }); }); } else { showMusicPopup(t); }
+                        localStorage.setItem(FLAG,'1'); } }catch(e){}
                     const handle = document.getElementById('musicHandle'); const widget = document.getElementById('musicWidget'); const body = document.getElementById('musicBody'); if(handle && widget){ handle.addEventListener('click', ()=>{ widget.classList.toggle('show'); if(body) body.classList.toggle('open'); handle.setAttribute('aria-expanded', widget.classList.contains('show')); }); }
                 });
             })();
