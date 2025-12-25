@@ -1411,7 +1411,201 @@
         /* 适度呈现时间线容器以获得专注感（内联动画） */
         body.changelog-open .changelog-section .changelog-wrap{ transform: translateY(0); animation: changelogEnter 320ms ease both; }
         @keyframes changelogEnter{ from{opacity:0; transform: translateY(6px) scale(.998)} to{opacity:1; transform: translateY(0) scale(1)} }
-    </style>
+
+        /* 更新日志时间线样式增强 */
+        .changelog-section {
+            margin: 24px 0 40px;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: var(--shadow);
+        }
+
+        .changelog-wrap {
+            position: relative;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 48px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 18px;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, var(--primary-blue), var(--light-blue));
+            border-radius: 2px;
+        }
+
+        .timeline-year {
+            display: block;
+            text-align: center;
+            margin: 28px 0;
+            color: var(--text-medium);
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: var(--highlight-bg);
+            padding: 10px 20px;
+            border-radius: 10px;
+            border-left: 4px solid var(--yellow-accent);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin: 16px 0 32px;
+            opacity: 0;
+            transform: translateX(-18px);
+            transition: opacity 420ms cubic-bezier(.2,.9,.2,1) var(--delay,0ms), 
+                        transform 420ms cubic-bezier(.2,.9,.2,1) var(--delay,0ms);
+        }
+
+        .timeline-item.visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: 6px;
+            top: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: var(--card-bg);
+            border: 4px solid var(--primary-blue);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            z-index: 2;
+        }
+
+        .timeline-card {
+            margin-left: 60px;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid var(--primary-blue);
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .timeline-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .timeline-card h4 {
+            margin: 0 0 6px;
+            font-size: 1.15rem;
+            color: var(--heading-color);
+            font-weight: 600;
+        }
+
+        .timeline-card .subtitle {
+            font-size: 0.95rem;
+            color: var(--muted);
+            margin-bottom: 8px;
+            font-weight: 600;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .timeline-card .content {
+            color: var(--text);
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+
+        .timeline-card .whisper {
+            display: block;
+            margin-top: 10px;
+            color: rgba(100,110,130,0.7);
+            font-style: italic;
+            font-size: 0.95rem;
+            padding: 8px 12px;
+            background: rgba(255, 204, 0, 0.05);
+            border-radius: 6px;
+            border-left: 3px solid var(--yellow-accent);
+        }
+
+        .timeline-card .time {
+            position: absolute;
+            right: 12px;
+            bottom: 10px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .changelog-section {
+                padding: 20px;
+            }
+            
+            .timeline {
+                padding-left: 12px;
+            }
+            
+            .timeline-card {
+                margin-left: 42px;
+                padding: 14px;
+            }
+            
+            .timeline-dot {
+                left: 0;
+                width: 20px;
+                height: 20px;
+                border-width: 3px;
+            }
+            
+            .timeline::before {
+                left: 10px;
+            }
+            
+            .timeline-year {
+                font-size: 1.2rem;
+                padding: 8px 15px;
+            }
+        }
+
+        /* 当打开更新日志时的样式 */
+        body.changelog-open #changelog {
+            display: block !important;
+            position: relative;
+            left: auto;
+            transform: none;
+            top: auto;
+            width: 100%;
+            max-height: none;
+            overflow: visible;
+            padding: 22px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            animation: changelogEnter 320ms ease both;
+        }
+
+        /* 只隐藏主内容区域内的其它元素，保留背景装饰和导航 */
+        body.changelog-open #main-wrapper > :not(#changelog) {
+            display: none !important;
+        }
+
+        /* 时间线入场动画 */
+        @keyframes changelogEnter {
+            from {
+                opacity: 0;
+                transform: translateY(6px) scale(.998);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        </style>
 </head>
 <body>
     <!-- 预加载动画（页面首屏预加载） -->
@@ -1435,7 +1629,7 @@
                         <li class="navbar-item"><a class="active" href="index.html"><i class="fa-regular fa-house fa-fw"></i> 首页</a></li>
                         <li class="navbar-item"><a href="Documents.html"><i class="fa-regular fa-archive fa-fw"></i> 帮助手册</a></li>
                         <li class="navbar-item"><a href="Thanks.html"><i class="fa-regular fa-hand-holding-heart fa-fw"></i> 感谢名单</a></li>
-                        <li class="navbar-item"><a href="index.html#changelog"><i class="fa-regular fa-chart-bar fa-fw"></i> 更新日志</a></li>
+                        <li class="navbar-item"><a href="#changelog" id="changelog-link"><i class="fa-regular fa-chart-bar fa-fw"></i> 更新日志</a></li>
                     </ul>
                 </div>
                 <div class="mobile">
@@ -1768,6 +1962,7 @@
             const link = document.getElementById('changelog-link');
             const section = document.getElementById('changelog');
             const timeline = document.getElementById('timeline');
+            
             function animateTimelineItems(){
                 const items = timeline ? Array.from(timeline.querySelectorAll('.timeline-item')) : [];
                 items.forEach((it, idx)=>{
@@ -1794,6 +1989,7 @@
                 });
                 section.scrollIntoView({behavior:'smooth'});
             }
+            
             function hideChangelog(){
                 if(!section) return;
                 document.body.classList.remove('changelog-open');
@@ -1801,7 +1997,9 @@
                 // clear hash
                 try{ history.replaceState && history.replaceState({}, '', location.pathname); }catch(e){}
             }
+            
             if(link){ link.addEventListener('click', (e)=>{ e.preventDefault(); showChangelog(); }); }
+            
             // close button
             const closeBtn = document.getElementById('changelog-close');
             if(closeBtn){ closeBtn.addEventListener('click', (e)=>{ e.preventDefault(); hideChangelog(); }); }
@@ -1812,56 +2010,129 @@
                     const res = await fetch('UpdateLog.json');
                     if(!res.ok) throw new Error('读取 UpdateLog.json 失败');
                     const data = await res.json();
-                    // 展开每个 top-level entry 的 Log 子项为单独记录并附带 TimeStamp/UpdateLevel
-                    const items = [];
-                    (data || []).forEach(entry=>{
-                        const ts = entry.TimeStamp || '';
-                        const level = entry.UpdateLevel || '';
-                        const logs = Array.isArray(entry.Log) ? entry.Log : [];
-                        logs.forEach(log => {
-                            items.push({
-                                time: ts,
-                                updateLevel: level,
-                                title: log.Title || '',
-                                content: log.Content || '',
-                                whisper: log.Whisper || ''
+                    
+                    // 清空时间线
+                    timeline.innerHTML = '';
+                    
+                    if(!data || !Array.isArray(data) || data.length === 0){
+                        timeline.innerHTML = '<p class="note">暂无更新记录。</p>';
+                        return;
+                    }
+                    
+                    // 按时间降序排序
+                    const sortedData = [...data].sort((a, b) => {
+                        const dateA = new Date(a.TimeStamp.replace(/\//g, '-'));
+                        const dateB = new Date(b.TimeStamp.replace(/\//g, '-'));
+                        return dateB - dateA; // 降序，最新的在前
+                    });
+                    
+                    // 按年份分组
+                    const itemsByYear = {};
+                    sortedData.forEach(entry => {
+                        const year = entry.TimeStamp ? entry.TimeStamp.split('/')[0] : '未分类';
+                        if (!itemsByYear[year]) {
+                            itemsByYear[year] = [];
+                        }
+                        itemsByYear[year].push(entry);
+                    });
+                    
+                    // 按年份降序渲染
+                    const years = Object.keys(itemsByYear).sort((a, b) => b - a);
+                    
+                    years.forEach(year => {
+                        // 添加年份标题
+                        const yearEl = document.createElement('div');
+                        yearEl.className = 'timeline-year';
+                        yearEl.textContent = year + '年';
+                        timeline.appendChild(yearEl);
+                        
+                        // 渲染该年份的所有更新条目
+                        itemsByYear[year].forEach(entry => {
+                            const entryDate = entry.TimeStamp || '';
+                            const updateLevel = entry.UpdateLevel || '';
+                            const version = entry.Version || '';
+                            
+                            // 每个条目可能有多个日志（Log数组）
+                            const logs = Array.isArray(entry.Log) ? entry.Log : [];
+                            
+                            logs.forEach((log, logIndex) => {
+                                const itemEl = document.createElement('div');
+                                itemEl.className = 'timeline-item';
+                                
+                                const dot = document.createElement('div');
+                                dot.className = 'timeline-dot';
+                                
+                                const card = document.createElement('div');
+                                card.className = 'timeline-card';
+                                
+                                // 创建标题
+                                const title = document.createElement('h4');
+                                title.textContent = log.Title || '(更新)';
+                                
+                                // 创建副标题（包含更新级别和版本）
+                                const subtitle = document.createElement('div');
+                                subtitle.className = 'subtitle';
+                                subtitle.textContent = `${updateLevel} | ${version}`;
+                                
+                                // 创建内容
+                                const content = document.createElement('div');
+                                content.className = 'content';
+                                content.innerHTML = (log.Content || '').replace(/\n/g, '<br>');
+                                
+                                // 创建悄悄话（如果有）
+                                let whisper = null;
+                                if (log.Whisper && log.Whisper.trim()) {
+                                    whisper = document.createElement('div');
+                                    whisper.className = 'whisper';
+                                    whisper.textContent = log.Whisper;
+                                }
+                                
+                                // 创建时间戳
+                                const time = document.createElement('div');
+                                time.className = 'time';
+                                time.textContent = entryDate;
+                                
+                                // 组装卡片
+                                card.appendChild(subtitle);
+                                card.appendChild(title);
+                                card.appendChild(content);
+                                if (whisper) {
+                                    card.appendChild(whisper);
+                                }
+                                card.appendChild(time);
+                                
+                                // 组装时间线项目
+                                itemEl.appendChild(dot);
+                                itemEl.appendChild(card);
+                                timeline.appendChild(itemEl);
                             });
                         });
                     });
-                    // 按时间降序（解析为 Date）
-                    items.sort((a,b)=>{ const da=new Date(a.time); const db=new Date(b.time); return db - da; });
-                    // 渲染，按年分组
-                    timeline.innerHTML = '';
-                    let lastYear = null;
-                    items.forEach(it=>{
-                        const y = (it.time || '').toString().split('/')[0] || (new Date(it.time)).getFullYear();
-                        if(y && y !== lastYear){
-                            const yearEl = document.createElement('div'); yearEl.className='timeline-year'; yearEl.textContent = y; timeline.appendChild(yearEl); lastYear = y;
-                        }
-                        const itemEl = document.createElement('div'); itemEl.className='timeline-item';
-                        const dot = document.createElement('div'); dot.className='timeline-dot';
-                        const card = document.createElement('div'); card.className='timeline-card';
-                        const title = document.createElement('h4'); title.textContent = it.title || '(更新)';
-                        const subtitle = document.createElement('div'); subtitle.className='subtitle'; subtitle.textContent = it.updateLevel || '';
-                        const content = document.createElement('div'); content.className='content'; content.innerHTML = (it.content || '').replace(/\n/g,'<br>');
-                        const whisper = document.createElement('div'); whisper.className='whisper'; whisper.textContent = it.whisper || '';
-                        const time = document.createElement('div'); time.className='time'; time.textContent = it.time || '';
-                        card.appendChild(subtitle);
-                        card.appendChild(title);
-                        card.appendChild(content);
-                        if((it.whisper||'').trim()) card.appendChild(whisper);
-                        card.appendChild(time);
-                        itemEl.appendChild(dot);
-                        itemEl.appendChild(card);
-                        timeline.appendChild(itemEl);
-                    });
-                    if(items.length===0) timeline.innerHTML = '<p class="note">暂无更新记录。</p>';
-                }catch(err){ console.error(err); timeline.innerHTML = '<p class="note">加载更新日志失败。</p>'; }
+                    
+                    // 如果没有渲染任何内容，显示提示
+                    if (timeline.children.length === 0) {
+                        timeline.innerHTML = '<p class="note">暂无更新记录。</p>';
+                    }
+                    
+                } catch(err) { 
+                    console.error('加载更新日志失败:', err);
+                    timeline.innerHTML = '<p class="note">加载更新日志失败，请稍后重试。</p>';
+                }
             }
+            
             // 如果 URL hash 是 changelog，则自动打开
             if(location.hash === '#changelog') showChangelog();
-            // defer load
-            document.addEventListener('DOMContentLoaded', ()=>{ loadChangeLog(); if(location.hash==='#changelog') setTimeout(()=>{ const el=document.getElementById('changelog'); el && el.scrollIntoView({behavior:'auto'}); },200); });
+            
+            // 延迟加载更新日志
+            document.addEventListener('DOMContentLoaded', ()=>{
+                loadChangeLog();
+                if(location.hash==='#changelog') {
+                    setTimeout(()=>{
+                        const el=document.getElementById('changelog');
+                        el && el.scrollIntoView({behavior:'auto'});
+                    },200);
+                }
+            });
         })();
     </script>
     <!-- 预加载与运行时长脚本 -->
