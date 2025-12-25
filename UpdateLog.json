@@ -34,5 +34,17 @@
                 "Whisper":"说不定什么时候我在这弄点小秋自己唱的歌（也许？大概？可能？）"
             }
         ]
+    },
+            {
+        "UpdateLevel":"Website Update(Critical)",      
+        "TimeStamp":"2025/12/25",
+        "Version":"Website 0.1.1",
+        "Log": [
+            {
+                "Title":"网站功能更新",
+                "Content":"项目网页的更新正式版本，修复了音乐播放器的bug，优化了用户体验。",
+                "Whisper":"我怎么都想不到修复音乐播放器会把更新日志这东西搞坏"
+            }
+        ]
     }
 ]
