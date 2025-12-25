@@ -33,11 +33,47 @@
     </style>
 </head>
 <body>
-    <div class="top-nav">
-        <div><a href="index.html">← 返回首页</a></div>
-        <div>
-            <a href="index.html#changelog">更新日志</a>
-            <a href="Thanks.html">感谢名单</a>
+    <header class="navbar-container" id="navbarContainer">
+        <div class="navbar-content transition-navbar has-home-banner">
+            <div class="left">
+                <a class="logo-title" href="index.html"><h1>花咲一秋</h1></a>
+            </div>
+            <div class="right">
+                <div class="desktop">
+                    <ul class="navbar-list">
+                        <li class="navbar-item"><a href="index.html"><i class="fa-regular fa-house fa-fw"></i> 首页</a></li>
+                        <li class="navbar-item"><a href="index.html#changelog"><i class="fa-regular fa-chart-bar fa-fw"></i> 更新日志</a></li>
+                        <li class="navbar-item"><a href="Thanks.html"><i class="fa-regular fa-hand-holding-heart fa-fw"></i> 感谢名单</a></li>
+                    </ul>
+                </div>
+                <div class="mobile">
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <div class="icon-item navbar-bar" id="navbarBar"><i class="fa-solid fa-bars"></i></div>
+                </div>
+            </div>
+        </div>
+        <div class="navbar-drawer" id="navbarDrawer">
+            <ul class="drawer-navbar-list">
+                <li class="drawer-navbar-item"><a href="index.html"><span>首页</span><i class="fa-regular fa-house fa-sm fa-fw"></i></a></li>
+                <li class="drawer-navbar-item"><a href="index.html#changelog"><span>更新日志</span><i class="fa-regular fa-chart-bar fa-sm fa-fw"></i></a></li>
+                <li class="drawer-navbar-item"><a href="Thanks.html"><span>感谢名单</span><i class="fa-regular fa-hand-holding-heart fa-sm fa-fw"></i></a></li>
+            </ul>
+        </div>
+        <div class="window-mask" id="windowMask"></div>
+    </header>
+
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+            <ul class="hidden-tools-list" id="hiddenToolsList">
+                <li class="right-bottom-tools tool-font-adjust-plus" title="放大字体"><i class="fa-regular fa-magnifying-glass-plus"></i></li>
+                <li class="right-bottom-tools tool-font-adjust-minus" title="缩小字体"><i class="fa-regular fa-magnifying-glass-minus"></i></li>
+                <li class="right-bottom-tools tool-dark-light-toggle" title="切换明暗主题"><i class="fa-regular fa-moon" id="themeIcon"></i></li>
+                <li class="right-bottom-tools tool-scroll-to-bottom" title="滚动到底部"><i class="fa-regular fa-arrow-down"></i></li>
+            </ul>
+            <ul class="visible-tools-list">
+                <li class="right-bottom-tools toggle-tools-list" title="展开/收起工具" id="toggleToolsBtn"><i class="fa-regular fa-cog fa-spin" id="gearIcon"></i></li>
+                <li class="right-bottom-tools tool-scroll-to-top" title="回到顶部" id="scrollToTopBtn"><i class="arrow-up fas fa-arrow-up"></i><span class="percent" id="scrollPercent">0%</span></li>
+            </ul>
         </div>
     </div>
     <!-- 运行时长小组件（与 index 页面样式一致） -->
@@ -72,22 +108,22 @@
         <p>此页面暂时为空，但顶部导航已提供“更新日志”入口以返回并打开更新日志视图。</p>
     </main>
     <!-- 音乐播放器（文档页也提供） -->
-    <div class="music-handle" id="musicHandleDocs" role="button" title="音乐播放器" aria-label="音乐播放器控制">
+    <div class="music-handle" id="musicHandle" role="button" title="音乐播放器" aria-label="音乐播放器控制">
         <i class="fa fa-music"></i>
     </div>
-    <div class="music-widget" id="musicWidgetDocs">
-        <div class="music-header" id="musicToggleDocs" role="button" aria-expanded="false">
+    <div class="music-widget" id="musicWidget">
+        <div class="music-header" id="musicToggle" role="button" aria-expanded="false">
             <div style="display:flex;align-items:center;gap:10px"><i class="fa fa-music"></i><div style="font-weight:700">音乐播放器</div></div>
             <div style="font-size:12px;color:#667">悬停展开或点击控制</div>
         </div>
-        <div class="music-body" id="musicBodyDocs">
+        <div class="music-body" id="musicBody">
             <meting-js server="netease" type="playlist" id="2639364381"></meting-js>
         </div>
     </div>
     <script>
         document.addEventListener('DOMContentLoaded', ()=>{
-            const t = document.getElementById('musicToggleDocs'); const b = document.getElementById('musicBodyDocs'); if(t && b){ t.addEventListener('click', ()=>{ b.classList.toggle('open'); t.setAttribute('aria-expanded', b.classList.contains('open')); }); }
-            const handle = document.getElementById('musicHandleDocs'); if(handle){ handle.addEventListener('click', ()=>{ const body = document.getElementById('musicBodyDocs'); if(!body) return; const open = body.classList.toggle('open'); handle.setAttribute('aria-expanded', open ? 'true':'false'); }); }
+            const t = document.getElementById('musicToggle'); const b = document.getElementById('musicBody'); if(t && b){ t.addEventListener('click', ()=>{ b.classList.toggle('open'); t.setAttribute('aria-expanded', b.classList.contains('open')); }); }
+            const handle = document.getElementById('musicHandle'); if(handle){ handle.addEventListener('click', ()=>{ const body = document.getElementById('musicBody'); if(!body) return; const open = body.classList.toggle('open'); handle.setAttribute('aria-expanded', open ? 'true':'false'); }); }
             // Meting/APlayer popup for Documents
             // 初始化 Meting/APlayer：右上滑入卡片 + 首次随机自动播放（音量 15%） + 切歌弹窗
             (function initMetingPlayer(){
@@ -100,7 +136,7 @@
                     try{ if(typeof a.setVolume === 'function') a.setVolume(0.15); else if(typeof a.volume === 'function') a.volume(0.15); else if(a.audio) a.audio.volume = 0.15; }catch(e){}
                     try{ if(typeof a.on === 'function'){ a.on('play', ()=>{ try{ const idx = a.index || 0; const t = (a.list && a.list[idx]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t); }catch(e){} }); } }catch(e){}
                     try{ if(!localStorage.getItem(FLAG)){ const count = a.list.length || 1; const rnd = Math.floor(Math.random()*count); try{ a.index = rnd; }catch(e){} try{ if(typeof a.switch === 'function') a.switch(rnd); }catch(e){} try{ a.play(); }catch(e){} const t = (a.list && a.list[rnd]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t); localStorage.setItem(FLAG,'1'); } }catch(e){}
-                    const handle = document.getElementById('musicHandleDocs') || document.getElementById('musicHandle'); const widget = document.getElementById('musicWidgetDocs') || document.getElementById('musicWidget'); const body = document.getElementById('musicBodyDocs') || document.getElementById('musicBody'); if(handle && widget){ handle.addEventListener('click', ()=>{ widget.classList.toggle('show'); if(body) body.classList.toggle('open'); handle.setAttribute('aria-expanded', widget.classList.contains('show')); }); }
+                    const handle = document.getElementById('musicHandle'); const widget = document.getElementById('musicWidget'); const body = document.getElementById('musicBody'); if(handle && widget){ handle.addEventListener('click', ()=>{ widget.classList.toggle('show'); if(body) body.classList.toggle('open'); handle.setAttribute('aria-expanded', widget.classList.contains('show')); }); }
                 });
             })();
         });
@@ -108,7 +144,7 @@
     <script>
         // navbar scroll shrink behavior (apply example.html interaction)
         document.addEventListener('DOMContentLoaded', ()=>{
-            const top = document.querySelector('.top-nav');
+            const top = document.querySelector('.navbar-content');
             const navc = document.querySelector('.navbar-container');
             function onScroll(){ const y = window.scrollY || window.pageYOffset; if(y>50){ navc && navc.classList.add('shrink'); top && top.classList.add('shrink'); } else { navc && navc.classList.remove('shrink'); top && top.classList.remove('shrink'); } }
             window.addEventListener('scroll', onScroll); onScroll();

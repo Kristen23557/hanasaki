@@ -119,15 +119,75 @@
         })();
     </script>
         <script>
-            // navbar scroll shrink behavior (apply example.html style interactions)
+            // Enhanced navbar + tools interactions (anime.js-driven) with accessibility (keyboard, focus trap)
             document.addEventListener('DOMContentLoaded', ()=>{
-                const top = document.querySelector('.top-nav');
-                const navc = document.querySelector('.navbar-container');
-                function onScroll(){ const y = window.scrollY || window.pageYOffset; if(y>50){ navc && navc.classList.add('shrink'); top && top.classList.add('shrink'); } else { navc && navc.classList.remove('shrink'); top && top.classList.remove('shrink'); } }
+                const navbarContainer = document.getElementById('navbarContainer');
+                const navbarBar = document.getElementById('navbarBar');
+                const navbarDrawer = document.getElementById('navbarDrawer');
+                const windowMask = document.getElementById('windowMask');
+                const toggleToolsBtn = document.getElementById('toggleToolsBtn');
+                const hiddenToolsList = document.getElementById('hiddenToolsList');
+                const gearIcon = document.getElementById('gearIcon');
+
+                function openDrawer(){
+                    if(!navbarDrawer) return;
+                    navbarDrawer.classList.add('open');
+                    navbarDrawer.setAttribute('aria-hidden','false');
+                    navbarBar && navbarBar.setAttribute('aria-expanded','true');
+                    windowMask && windowMask.classList.add('show');
+                    windowMask && windowMask.setAttribute('aria-hidden','false');
+                    document.body.style.overflow = 'hidden';
+                    // anime animation
+                    try{ anime({ targets: navbarDrawer, translateX: [-100, 0], opacity: [0,1], duration: 300, easing: 'easeOutExpo' }); }catch(e){}
+                    // focus management: focus first focusable in drawer
+                    setTimeout(()=>{ trapFocusIn(navbarDrawer); }, 10);
+                }
+
+                function closeDrawer(){
+                    if(!navbarDrawer) return;
+                    try{ anime({ targets: navbarDrawer, translateX: [0, -100], opacity: [1,0], duration: 250, easing: 'easeInExpo', complete: ()=>{ navbarDrawer.classList.remove('open'); navbarDrawer.setAttribute('aria-hidden','true'); navbarBar && navbarBar.setAttribute('aria-expanded','false'); windowMask && windowMask.classList.remove('show'); windowMask && windowMask.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; } }); }catch(e){ navbarDrawer.classList.remove('open'); navbarDrawer.setAttribute('aria-hidden','true'); navbarBar && navbarBar.setAttribute('aria-expanded','false'); windowMask && windowMask.classList.remove('show'); windowMask && windowMask.setAttribute('aria-hidden','true'); document.body.style.overflow = ''; }
+                    // restore focus to navbarBar
+                    try{ navbarBar && navbarBar.focus(); }catch(e){}
+                }
+
+                function toggleDrawer(){ if(navbarDrawer && navbarDrawer.classList.contains('open')) closeDrawer(); else openDrawer(); }
+
+                // focus trap utility (basic)
+                let previousFocus = null;
+                function trapFocusIn(container){ if(!container) return; previousFocus = document.activeElement; const focusables = container.querySelectorAll('a, button, [tabindex]:not([tabindex="-1"])'); if(focusables && focusables.length) { focusables[0].focus(); const first = focusables[0]; const last = focusables[focusables.length-1]; function keyHandler(e){ if(e.key === 'Tab'){ if(e.shiftKey && document.activeElement === first){ e.preventDefault(); last.focus(); } else if(!e.shiftKey && document.activeElement === last){ e.preventDefault(); first.focus(); } } else if(e.key === 'Escape' || e.key === 'Esc'){ e.preventDefault(); closeDrawer(); document.removeEventListener('keydown', keyHandler); } }
+                    document.addEventListener('keydown', keyHandler);
+                    // remember to remove the handler when drawer closes
+                    const observer = new MutationObserver(()=>{ if(!container.classList.contains('open')){ try{ document.removeEventListener('keydown', keyHandler); }catch(e){} observer.disconnect(); } }); observer.observe(container, { attributes:true, attributeFilter:['class'] });
+                } }
+
+                // navbarBar click / keyboard
+                if(navbarBar){ navbarBar.addEventListener('click', toggleDrawer); navbarBar.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key === ' '){ e.preventDefault(); toggleDrawer(); } }); }
+                if(windowMask) windowMask.addEventListener('click', closeDrawer);
+
+                // close drawer when a drawer link clicked (animated)
+                document.querySelectorAll('.drawer-navbar-item a').forEach(link=> link.addEventListener('click', ()=>{ closeDrawer(); }));
+
+                // navbar shrink on scroll
+                function onScroll(){ const y = window.scrollY || window.pageYOffset; if(y>50){ navbarContainer && navbarContainer.classList.add('shrink'); } else { navbarContainer && navbarContainer.classList.remove('shrink'); } }
                 window.addEventListener('scroll', onScroll); onScroll();
-                // drawer links close behavior
-                document.querySelectorAll('.drawer-navbar-item a').forEach(link=> link.addEventListener('click', ()=>{ const nd = document.querySelector('.navbar-drawer'); const mask = document.getElementById('windowMask'); if(nd){ nd.classList.remove('open'); mask && mask.classList.remove('show'); document.body.style.overflow=''; } }));
-                const navbarBar = document.getElementById('navbarBar'); if(navbarBar){ navbarBar.addEventListener('click', ()=>{ const nd = document.querySelector('.navbar-drawer'); const mask = document.getElementById('windowMask'); if(!nd) return; if(nd.classList.contains('open')){ nd.classList.remove('open'); mask && mask.classList.remove('show'); document.body.style.overflow=''; } else { nd.classList.add('open'); mask && mask.classList.add('show'); document.body.style.overflow='hidden'; } }); }
+
+                // tools: gear spin and hidden list
+                if(gearIcon){ var gearAnimation = anime({ targets: gearIcon, rotate: 360, duration: 4000, easing: 'linear', loop: true, autoplay: true });
+                    const btn = toggleToolsBtn;
+                    if(btn){ btn.addEventListener('mouseenter', ()=>{ gearAnimation.duration = 1500; }); btn.addEventListener('mouseleave', ()=>{ gearAnimation.duration = 4000; }); btn.addEventListener('click', ()=>{ hiddenToolsList.classList.toggle('show'); anime({ targets: btn, rotate: hiddenToolsList.classList.contains('show') ? 90 : 0, duration: 300, easing: 'easeOutExpo' }); }); }
+                }
+
+                // scroll percent animation
+                const scrollPercent = document.getElementById('scrollPercent');
+                window.addEventListener('scroll', ()=>{
+                    const scrollTop = window.scrollY;
+                    const scrollHeight = document.body.scrollHeight - window.innerHeight;
+                    const percent = scrollHeight > 0 ? Math.round((scrollTop / scrollHeight) * 100) : 0;
+                    if(scrollPercent){ anime({ targets: scrollPercent, innerHTML: [parseInt(scrollPercent.textContent)||0, percent], duration: 200, easing: 'easeOutExpo', update: function(anim){ scrollPercent.textContent = Math.round(anim.animations[0].currentValue) + '%'; } }); scrollPercent.style.opacity = percent === 0 ? 0 : 1; }
+                });
+
+                // keyboard: close drawer on ESC globally
+                document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ if(navbarDrawer && navbarDrawer.classList.contains('open')){ closeDrawer(); } const musicWidget = document.getElementById('musicWidget'); const musicBody = document.getElementById('musicBody'); if(musicBody && musicBody.classList.contains('open')){ musicBody.classList.remove('open'); const handle = document.getElementById('musicHandle'); handle && handle.setAttribute('aria-expanded','false'); } } });
             });
         </script>
     <style>
@@ -882,6 +942,22 @@
             /* 兼容旧 top-nav 布局，应用相同视觉风格 */
             .top-nav{ background:var(--card-bg); backdrop-filter: blur(8px); border-bottom:1px solid rgba(0,0,0,0.06); padding:12px; transition: padding 0.28s ease, box-shadow 0.28s ease; }
             .top-nav.shrink{ padding:6px 12px; box-shadow:0 6px 18px rgba(0,0,0,0.06); }
+            /* Drawer and mask styles (ensure hidden by default) */
+            .navbar-drawer { position: fixed; top: 0; left: -100%; width: 100%; max-width: 320px; height: 100vh; background-color: var(--card-bg); z-index: 1001; transition: left 0.3s cubic-bezier(0.4,0,0.2,1); padding: 2rem 1.5rem; overflow-y: auto; box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+            .navbar-drawer.open { left: 0; }
+            .window-mask { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.3); z-index: 1000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+            .window-mask.show { opacity: 1; pointer-events: all; }
+
+            /* Ensure desktop/mobile nav visibility mirrors example.html */
+            .desktop { display: flex; }
+            .mobile { display: none; }
+            .navbar-list { display: flex; list-style: none; gap: 1.2rem; }
+            .navbar-item a { color: var(--text-medium); text-decoration: none; font-weight:600; padding:6px 4px; display:inline-flex; align-items:center; gap:0.5rem; }
+            .navbar-item a.active, .navbar-item a:hover { color: var(--primary-blue); }
+            @media (max-width: 768px) {
+                .desktop { display: none; }
+                .mobile { display: flex; }
+            }
 
         .nav-toggle{background:transparent;border:none;padding:6px 10px;border-radius:8px;cursor:pointer;color:var(--text-medium);font-size:18px}
         .nav-toggle:hover{background:rgba(255,255,255,0.03);color:var(--text-light);transform:translateY(-2px)}
@@ -959,21 +1035,54 @@
     <!-- 装饰性浮动控件：回到顶部 & 脉冲心 -->
     <button id="back-to-top" title="回到顶部" style="display:none;">↑</button>
     <div id="floating-heart" aria-hidden="true"></div>
-    <!-- 顶部导航栏 -->
-    <div class="content-wrapper" style="padding-top:18px;">
-        <nav class="top-nav" aria-label="主导航">
-            <div class="nav-left">
-                <a href="index.html" class="nav-logo">花咲一秋</a>
+    <!-- 顶部导航栏（迁移自 example.html） -->
+    <header class="navbar-container" id="navbarContainer">
+        <div class="navbar-content transition-navbar has-home-banner">
+            <div class="left">
+                <a class="logo-title" href="index.html">
+                    <h1>花咲一秋</h1>
+                </a>
             </div>
-            <div class="nav-right nav-links">
-                <a href="Documents.html">帮助手册</a>
-                <a href="Thanks.html">感谢名单</a>
-                <a href="#" id="changelog-link">更新日志</a>
-                <button id="theme-toggle" class="nav-toggle" aria-label="切换主题"><i class="fas fa-moon"></i></button>
-                <button id="contrast-toggle" class="nav-toggle" aria-label="高对比">HC</button>
-                <button id="motion-toggle" class="nav-toggle" aria-label="动画开关">⭘</button>
+            <div class="right">
+                <div class="desktop">
+                    <ul class="navbar-list">
+                        <li class="navbar-item"><a class="active" href="index.html"><i class="fa-regular fa-house fa-fw"></i> 首页</a></li>
+                        <li class="navbar-item"><a href="Documents.html"><i class="fa-regular fa-archive fa-fw"></i> 帮助手册</a></li>
+                        <li class="navbar-item"><a href="Thanks.html"><i class="fa-regular fa-hand-holding-heart fa-fw"></i> 感谢名单</a></li>
+                        <li class="navbar-item"><a href="index.html#changelog"><i class="fa-regular fa-chart-bar fa-fw"></i> 更新日志</a></li>
+                    </ul>
+                </div>
+                <div class="mobile">
+                    <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i></div>
+                    <div class="icon-item navbar-bar" id="navbarBar" role="button" tabindex="0" aria-controls="navbarDrawer" aria-expanded="false"><i class="fa-solid fa-bars"></i></div>
+                </div>
             </div>
-        </nav>
+        </div>
+        <div class="navbar-drawer" id="navbarDrawer" role="dialog" aria-modal="true" aria-hidden="true" tabindex="-1">
+            <ul class="drawer-navbar-list">
+                <li class="drawer-navbar-item"><a class="active" href="index.html"><span>首页</span><i class="fa-regular fa-house fa-sm fa-fw"></i></a></li>
+                <li class="drawer-navbar-item"><a href="Documents.html"><span>帮助手册</span><i class="fa-regular fa-archive fa-sm fa-fw"></i></a></li>
+                <li class="drawer-navbar-item"><a href="Thanks.html"><span>感谢名单</span><i class="fa-regular fa-hand-holding-heart fa-sm fa-fw"></i></a></li>
+                <li class="drawer-navbar-item"><a href="index.html#changelog"><span>更新日志</span><i class="fa-regular fa-chart-bar fa-sm fa-fw"></i></a></li>
+            </ul>
+        </div>
+        <div class="window-mask" id="windowMask" role="presentation" aria-hidden="true"></div>
+    </header>
+
+    <!-- 右下角工具栏（迁移自 example.html） -->
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+            <ul class="hidden-tools-list" id="hiddenToolsList">
+                <li class="right-bottom-tools tool-font-adjust-plus" title="放大字体"><i class="fa-regular fa-magnifying-glass-plus"></i></li>
+                <li class="right-bottom-tools tool-font-adjust-minus" title="缩小字体"><i class="fa-regular fa-magnifying-glass-minus"></i></li>
+                <li class="right-bottom-tools tool-dark-light-toggle" title="切换明暗主题"><i class="fa-regular fa-moon" id="themeIcon"></i></li>
+                <li class="right-bottom-tools tool-scroll-to-bottom" title="滚动到底部"><i class="fa-regular fa-arrow-down"></i></li>
+            </ul>
+            <ul class="visible-tools-list">
+                <li class="right-bottom-tools toggle-tools-list" title="展开/收起工具" id="toggleToolsBtn"><i class="fa-regular fa-cog fa-spin" id="gearIcon"></i></li>
+                <li class="right-bottom-tools tool-scroll-to-top" title="回到顶部" id="scrollToTopBtn"><i class="arrow-up fas fa-arrow-up"></i><span class="percent" id="scrollPercent">0%</span></li>
+            </ul>
+        </div>
     </div>
 
     <!-- 主要内容区域 -->
@@ -1593,9 +1702,13 @@
                             }
                         }catch(e){}
 
-                        // handle：点击切换展开（同时支持悬停展开）
+                        // handle：点击切换展开（同时支持悬停展开 & 键盘 Enter/Space）
                         const handle = document.getElementById('musicHandle'); const widget = document.getElementById('musicWidget'); const body = document.getElementById('musicBody');
-                        if(handle && widget){ handle.addEventListener('click', ()=>{ widget.classList.toggle('show'); if(body) body.classList.toggle('open'); handle.setAttribute('aria-expanded', widget.classList.contains('show')); }); }
+                        if(handle && widget){
+                            function toggleMusicWidget(){ if(!body || !widget) return; const open = body.classList.toggle('open'); if(open){ widget.classList.add('show'); widget.setAttribute('aria-hidden','false'); } else { widget.classList.remove('show'); widget.setAttribute('aria-hidden','true'); } handle.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+                            handle.addEventListener('click', toggleMusicWidget);
+                            handle.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleMusicWidget(); } });
+                        }
                     });
                 })();
             });
@@ -1603,10 +1716,10 @@
     </script>
 
     <!-- 右上隐藏控件：音乐 handle + 音乐播放器 -->
-    <div class="music-handle" id="musicHandle" role="button" title="音乐播放器" aria-label="音乐播放器控制">
+    <div class="music-handle" id="musicHandle" role="button" tabindex="0" title="音乐播放器" aria-label="音乐播放器控制" aria-controls="musicWidget" aria-expanded="false">
         <i class="fa fa-music" aria-hidden="true"></i>
     </div>
-    <div class="music-widget" id="musicWidget" aria-label="音乐播放器">
+    <div class="music-widget" id="musicWidget" aria-label="音乐播放器" role="region" aria-hidden="true" tabindex="-1">
         <div class="music-header" id="musicToggle" role="button" aria-expanded="false">
             <div style="display:flex;align-items:center;gap:10px">
                 <i class="fa fa-music" aria-hidden="true"></i>
@@ -1621,20 +1734,6 @@
 
     <!-- 右下堆栈控件：运行时长小组件（保持右下） -->
     <div class="widget-stack" aria-hidden="false">
-        <div class="music-widget" id="musicWidget" aria-label="音乐播放器">
-            <div class="music-header" id="musicToggle" role="button" aria-expanded="false">
-                <div style="display:flex;align-items:center;gap:10px">
-                    <i class="fa fa-music" aria-hidden="true"></i>
-                    <div class="title">音乐播放器</div>
-                </div>
-                <div style="font-size:12px;color:var(--muted)">点击展开</div>
-            </div>
-            <div class="music-body" id="musicBody">
-                <!-- 使用 APlayer + MetingJS 渲染播放器（不自动播放） -->
-                <meting-js server="netease" type="playlist" id="2639364381"></meting-js>
-            </div>
-        </div>
-
         <div class="runtime-widget" role="note" aria-label="花咲一秋项目运行与周年进度">
             <div class="anniv-row">
                 <div style="display:flex;align-items:center">
@@ -1663,4 +1762,27 @@
         </div>
     </div>
 </body>
+    <script>
+        // Animation diagnostics: detect anime.js availability and record errors for HTTPS debugging
+        (function(){
+            window.__hanasaki_diag = window.__hanasaki_diag || {};
+            window.__hanasaki_diag.errors = window.__hanasaki_diag.errors || [];
+            window.addEventListener('error', function(ev){ try{ window.__hanasaki_diag.errors.push({ message: ev.message, filename: ev.filename, lineno: ev.lineno }); }catch(e){} });
+            function testAnime(){ try{
+                    if(window.anime && typeof window.anime === 'function'){
+                        // try a trivial animation on a transient element
+                        var t = document.createElement('div'); t.id='anime-diagnostic'; t.style.cssText='position:fixed;left:-9999px;top:-9999px;width:10px;height:10px;'; document.body.appendChild(t);
+                        try{ anime({ targets: t, translateX: [0, 10], duration: 120, complete: function(){ try{ document.body.removeChild(t); window.__hanasaki_diag.anime = 'ok'; }catch(e){} } }); }catch(e){ window.__hanasaki_diag.anime = 'error'; window.__hanasaki_diag.errors.push({message: e.message}); }
+                    } else {
+                        window.__hanasaki_diag.anime = 'missing';
+                        // attempt to dynamically load a fallback CDN
+                        var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js'; s.onload = function(){ window.__hanasaki_diag.anime = 'loaded-fallback'; testAnime(); }; s.onerror = function(){ window.__hanasaki_diag.anime = 'fallback-failed'; window.__hanasaki_diag.errors.push({message:'failed to load fallback anime'}); };
+                        document.head.appendChild(s);
+                    }
+                }catch(err){ try{ window.__hanasaki_diag.errors.push({message:err.message}); }catch(e){} }
+            }
+            // run after load to capture possible CSP/network blocking
+            window.addEventListener('load', function(){ setTimeout(testAnime, 200); });
+        })();
+    </script>
 </html>

@@ -250,17 +250,38 @@
     <button id="back-to-top" title="回到顶部" style="display:none;">↑</button>
     <div id="floating-heart" aria-hidden="true"></div>
     <div class="content-wrapper">
-        <nav class="top-nav">
-            <div><a href="index.html"> 返回首页</a></div>
-            <div>
-                <a href="Documents.html">帮助手册</a>
-                <a href="Thanks.html">感谢名单</a>
-                <a href="index.html#changelog">更新日志</a>
-                <button id="theme-toggle" class="nav-toggle" aria-label="切换主题"><i class="fas fa-moon"></i></button>
-                <button id="contrast-toggle" class="nav-toggle" aria-label="高对比">HC</button>
-                <button id="motion-toggle" class="nav-toggle" aria-label="动画开关">⭘</button>
+        <header class="navbar-container" id="navbarContainer">
+            <div class="navbar-content transition-navbar has-home-banner">
+                <div class="left">
+                    <a class="logo-title" href="index.html">
+                        <h1>花咲一秋</h1>
+                    </a>
+                </div>
+                <div class="right">
+                    <div class="desktop">
+                        <ul class="navbar-list">
+                            <li class="navbar-item"><a href="index.html"><i class="fa-regular fa-house fa-fw"></i> 首页</a></li>
+                            <li class="navbar-item"><a href="Documents.html"><i class="fa-regular fa-archive fa-fw"></i> 帮助手册</a></li>
+                            <li class="navbar-item"><a class="active" href="Thanks.html"><i class="fa-regular fa-hand-holding-heart fa-fw"></i> 感谢名单</a></li>
+                            <li class="navbar-item"><a href="index.html#changelog"><i class="fa-regular fa-chart-bar fa-fw"></i> 更新日志</a></li>
+                        </ul>
+                    </div>
+                    <div class="mobile">
+                        <div class="icon-item search search-popup-trigger"><i class="fa-solid fa-magnifying-glass"></i></div>
+                        <div class="icon-item navbar-bar" id="navbarBar"><i class="fa-solid fa-bars"></i></div>
+                    </div>
+                </div>
             </div>
-        </nav>
+            <div class="navbar-drawer" id="navbarDrawer">
+                <ul class="drawer-navbar-list">
+                    <li class="drawer-navbar-item"><a href="index.html"><span>首页</span><i class="fa-regular fa-house fa-sm fa-fw"></i></a></li>
+                    <li class="drawer-navbar-item"><a href="Documents.html"><span>帮助手册</span><i class="fa-regular fa-archive fa-sm fa-fw"></i></a></li>
+                    <li class="drawer-navbar-item"><a class="active" href="Thanks.html"><span>感谢名单</span><i class="fa-regular fa-hand-holding-heart fa-sm fa-fw"></i></a></li>
+                    <li class="drawer-navbar-item"><a href="index.html#changelog"><span>更新日志</span><i class="fa-regular fa-chart-bar fa-sm fa-fw"></i></a></li>
+                </ul>
+            </div>
+            <div class="window-mask" id="windowMask"></div>
+        </header>
 
         <header>
             <h1>感谢名单</h1>
@@ -507,6 +528,22 @@
             })();
         });
     </script>
+    <!-- 右下工具栏（迁移自 example.html） -->
+    <div class="right-side-tools-container">
+        <div class="side-tools-container">
+            <ul class="hidden-tools-list" id="hiddenToolsList">
+                <li class="right-bottom-tools tool-font-adjust-plus" title="放大字体"><i class="fa-regular fa-magnifying-glass-plus"></i></li>
+                <li class="right-bottom-tools tool-font-adjust-minus" title="缩小字体"><i class="fa-regular fa-magnifying-glass-minus"></i></li>
+                <li class="right-bottom-tools tool-dark-light-toggle" title="切换明暗主题"><i class="fa-regular fa-moon" id="themeIcon"></i></li>
+                <li class="right-bottom-tools tool-scroll-to-bottom" title="滚动到底部"><i class="fa-regular fa-arrow-down"></i></li>
+            </ul>
+            <ul class="visible-tools-list">
+                <li class="right-bottom-tools toggle-tools-list" title="展开/收起工具" id="toggleToolsBtn"><i class="fa-regular fa-cog fa-spin" id="gearIcon"></i></li>
+                <li class="right-bottom-tools tool-scroll-to-top" title="回到顶部" id="scrollToTopBtn"><i class="arrow-up fas fa-arrow-up"></i><span class="percent" id="scrollPercent">0%</span></li>
+            </ul>
+        </div>
+    </div>
+
     <!-- 右下堆栈控件：音乐播放器 + 运行时长小组件 -->
     <div class="widget-stack" aria-hidden="false">
         <!-- 顶部 handle + 隐藏式音乐播放器 -->
