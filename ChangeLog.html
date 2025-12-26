@@ -213,11 +213,11 @@
         /* 年份标记 */
         .year-marker {
             position: relative;
-            left: 50%;
+            left: 45.4%;
             transform: translateX(-50%);
             background: var(--card-bg);
-            padding: 8px 20px;
-            border-radius: 30px;
+            padding: 0px 20px;
+            border-radius: 20px;
             font-size: 1.5rem;
             font-weight: 700;
             color: var(--primary-blue);
@@ -230,7 +230,7 @@
 
         .month-marker {
             position: relative;
-            left: 50%;
+            left: 47.1%;
             transform: translateX(-50%);
             background: var(--card-bg);
             padding: 5px 15px;
@@ -291,7 +291,7 @@
         /* 连接线 */
         .connector-line {
             position: absolute;
-            top: 50%;
+            top: 53%;
             width: 40px;
             height: 2px;
             background: var(--primary-blue);
@@ -598,9 +598,77 @@
             display: table;
             clear: both;
         }
+
+        /* 返回主页按钮样式 */
+        .home-button-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .home-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card-bg);
+            color: var(--primary-blue);
+            text-decoration: none;
+            padding: 10px 16px;
+            border-radius: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(106, 147, 201, 0.2);
+            transition: var(--transition);
+            font-weight: 600;
+            font-size: 0.95rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .home-button:hover {
+            background: var(--primary-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-blue);
+        }
+
+        .home-button i {
+            font-size: 1.1rem;
+        }
+
+        .home-button-text {
+            white-space: nowrap;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .home-button-container {
+                top: 15px;
+                left: 15px;
+            }
+            
+            .home-button {
+                padding: 8px 12px;
+            }
+            
+            .home-button-text {
+                display: none;
+            }
+        }
+
     </style>
 </head>
 <body>
+
+    <!-- 返回主页按钮 - 添加在 body 开始位置 -->
+    <div class="home-button-container">
+        <a href="index.html" class="home-button" aria-label="返回主页">
+            <i class="fas fa-home"></i>
+            <span class="home-button-text">返回主页</span>
+        </a>
+    </div>
+
     <!-- 加载动画 -->
     <div class="loading-container" id="loadingContainer">
         <div class="loading-animation"></div>
