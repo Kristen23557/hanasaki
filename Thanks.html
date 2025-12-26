@@ -15,9 +15,6 @@
     <link rel="stylesheet" href="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/assets/odometer-theme-minimal.css">
     <script src="https://registry.npmmirror.com/hexo-theme-redefine/2.8.5/files/source/js/build/libs/odometer.min.js"></script>
     <!-- APlayer + MetingJS -->
-    <link href="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.css" rel="stylesheet">
-    <script src="https://cdn.bootcdn.net/ajax/libs/aplayer/1.10.1/APlayer.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/meting@2/dist/Meting.min.js"></script>
     <style>
         @font-face{
             font-family: 'SJ-Narrow';
@@ -610,20 +607,6 @@
 
     <!-- 右下堆栈控件：音乐播放器 + 运行时长小组件 -->
     <div class="widget-stack" aria-hidden="false">
-        <!-- 隐藏式音乐播放器卡片（悬停或点击头部展开） -->
-        <div class="music-widget" id="musicWidget" aria-label="音乐播放器" role="region" aria-hidden="true" tabindex="-1">
-            <div class="music-header" id="musicToggle" role="button" aria-expanded="false">
-                <div style="display:flex;align-items:center;gap:10px">
-                    <i class="fa fa-music" aria-hidden="true"></i>
-                    <div class="title">音乐播放器</div>
-                </div>
-                <div style="font-size:12px;color:var(--muted)">悬停展开或点击控制</div>
-            </div>
-            <div class="music-body" id="musicBody">
-                <meting-js server="netease" type="playlist" id="2639364381"></meting-js>
-            </div>
-        </div>
-
         <div class="runtime-widget" role="note" aria-label="花咲一秋项目运行与周年进度">
             <div class="anniv-row">
                 <div style="display:flex;align-items:center">
@@ -708,32 +691,6 @@
                     musicToggle.addEventListener('click', ()=>{ const open = musicBody.classList.toggle('open'); musicToggle.setAttribute('aria-expanded', open ? 'true' : 'false'); if(musicWidget){ if(open){ musicWidget.classList.add('show'); musicWidget.setAttribute('aria-hidden','false'); } else { musicWidget.classList.remove('show'); musicWidget.setAttribute('aria-hidden','true'); } } });
                 }
                 if(musicWidget){ let leaveTimer=null; musicWidget.addEventListener('mouseenter', ()=>{ clearTimeout(leaveTimer); musicWidget.classList.add('show'); musicWidget.setAttribute('aria-hidden','false'); }); musicWidget.addEventListener('mouseleave', ()=>{ leaveTimer=setTimeout(()=>{ if(musicBody && !musicBody.classList.contains('open')){ musicWidget.classList.remove('show'); musicWidget.setAttribute('aria-hidden','true'); } },420); }); musicToggle && musicToggle.addEventListener('keydown',(e)=>{ if(e.key==='Enter'|| e.key===' '){ e.preventDefault(); musicToggle.click(); } }); }
-                // Meting/APlayer：右上滑入卡片 + 首次随机自动播放（音量 15%） + 切歌弹窗（含 autoplay 回退提示）
-                (function initMetingPlayer(){
-                    const FLAG = 'hanasaki_music_autoplay_v1';
-                    const metingEl = document.querySelector('meting-js');
-                    if(!metingEl) return;
-                    function escapeHtmlLocal(s){ return String(s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-                    function showMusicPopup(track, opts){ if(!track) return; opts = opts || {}; const title = track.name || track.title || '未知曲目'; const artist = (track.artist && (typeof track.artist==='string'?track.artist: Array.isArray(track.artist)? track.artist.map(a=>a.name||a).join(', '): JSON.stringify(track.artist))) || track.author || ''; const popup = document.getElementById('musicPopup') || (function(){ const p=document.createElement('div'); p.id='musicPopup'; p.className='music-popup'; document.body.appendChild(p); return p; })(); popup.innerHTML = `<div style="font-weight:700;margin-bottom:6px">即将播放：${escapeHtmlLocal(title)}</div><div style="font-size:13px;color:var(--muted)">${escapeHtmlLocal(artist||'未知')}</div>`;
-                        if(opts.showEnableBtn){ const btn = document.createElement('button'); btn.className='music-enable-btn'; btn.style.cssText='margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:var(--primary-blue);color:#fff;cursor:pointer'; btn.textContent='启用声音并播放'; btn.addEventListener('click', ()=>{ try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play === 'function'){ a.play().catch(()=>{}); } popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); }catch(e){} }); popup.appendChild(btn); }
-                        popup.classList.add('show'); setTimeout(()=>{ if(!opts.persistent){ popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play==='function') a.play(); }catch(e){} } }, opts.timeout || 3000); }
-                    function whenAPlayerReady(cb){ const a = metingEl.aplayer || metingEl._aplayer || (window.APlayer && window.APlayer.instances && window.APlayer.instances[0]); if(!a) return setTimeout(()=>whenAPlayerReady(cb),200); if(!a.list || a.list.length===0) return setTimeout(()=>whenAPlayerReady(cb),200); cb(a); }
-                    whenAPlayerReady((a)=>{
-                        try{ if(typeof a.setVolume === 'function') a.setVolume(0.15); else if(typeof a.volume === 'function') a.volume(0.15); else if(a.audio) a.audio.volume = 0.15; }catch(e){}
-                        try{ if(typeof a.on === 'function'){ a.on('play', ()=>{ try{ const idx = a.index || 0; const t = (a.list && a.list[idx]) || {}; const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show'); showMusicPopup(t); }catch(e){} }); } }catch(e){}
-                        try{ if(!localStorage.getItem(FLAG)){ const count = a.list.length || 1; const rnd = Math.floor(Math.random()*count); try{ a.index = rnd; }catch(e){} try{ if(typeof a.switch === 'function') a.switch(rnd); }catch(e){}
-                                // 尝试播放并检测是否被浏览器阻止
-                                const playResult = (typeof a.play === 'function') ? a.play() : null;
-                                const t = (a.list && a.list[rnd]) || {};
-                                const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show');
-                                // 如果 play 返回 promise，捕获拒绝并展示启用提示按钮
-                                if(playResult && typeof playResult.then === 'function'){
-                                    playResult.then(()=>{ showMusicPopup(t); }).catch(()=>{ showMusicPopup(t, { persistent: true, showEnableBtn: true, timeout: 0 }); });
-                                } else { showMusicPopup(t); }
-                                localStorage.setItem(FLAG,'1'); } }catch(e){}
-                        const handle = document.getElementById('musicHandle'); const widget = document.getElementById('musicWidget'); const body = document.getElementById('musicBody'); if(handle && widget){ handle.addEventListener('click', ()=>{ widget.classList.toggle('show'); if(body) body.classList.toggle('open'); handle.setAttribute('aria-expanded', widget.classList.contains('show')); }); }
-                    });
-                })();
             });
         })();
     </script>
