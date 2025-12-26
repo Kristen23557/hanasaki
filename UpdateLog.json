@@ -1,49 +1,49 @@
 [
     {
-        "UpdateLevel":"First Release",      
-        "TimeStamp":"2025/12/21",
-        "Version":"Hanasaki 0.1.0",
+        "UpdateLevel": "First Release",
+        "TimeStamp": "2025/12/21",
+        "Version": "Hanasaki 0.1.0",
         "Log": [
             {
-                "Title":"花咲一秋项目初始版本发布",
-                "Content":"项目的第一个版本，包含基本功能和初始内容。",
-                "Whisper":"但是花咲一秋的生日不是今天哦~"
+                "Title": "项目初始版本发布",
+                "Content": "花咲一秋项目正式启动，发布首个功能版本。实现基础对话系统与群聊响应机制，建立核心交互框架。",
+                "Whisper": "但是花咲一秋的生日不是今天哦~"
             }
         ]
     },
     {
-        "UpdateLevel":"Website Release",      
-        "TimeStamp":"2025/12/23",
-        "Version":"Website 0.1.0",
+        "UpdateLevel": "Website Release",
+        "TimeStamp": "2025/12/23",
+        "Version": "Website 0.1.0",
         "Log": [
             {
-                "Title":"花咲一秋项目网站初始版本发布",
-                "Content":"项目网页的预览版本，实现了一些功能（帮助文档还是新建文件夹desu）。",
-                "Whisper":"工作日写网页真的很累人..."
+                "Title": "项目网站初始版本发布",
+                "Content": "项目官方网站正式上线，采用响应式设计架构，实现基础内容展示与导航系统。目前处于功能验证阶段。",
+                "Whisper": "工作日写网页真的很累人..."
             }
         ]
     },
-        {
-        "UpdateLevel":"Website Update(Minor)",      
-        "TimeStamp":"2025/12/24",
-        "Version":"Website 0.1.1 snapshot",
+    {
+        "UpdateLevel": "Website Update(Minor)",
+        "TimeStamp": "2025/12/24",
+        "Version": "Website 0.1.1 snapshot",
         "Log": [
             {
-                "Title":"网站功能更新",
-                "Content":"项目网页的预览快照版本，更新了右下的倒计时组件，以及一个音乐播放器（目前还有bug，不过在修了），导航栏样式也做出了更新，更好看了。",
-                "Whisper":"说不定什么时候我在这弄点小秋自己唱的歌（也许？大概？可能？）"
+                "Title": "网站功能更新",
+                "Content": "更新运行时长组件与周年进度条，集成网易云音乐播放器功能。优化导航栏视觉样式与交互体验。",
+                "Whisper": "说不定什么时候我在这弄点小秋自己唱的歌（也许？大概？可能？）"
             }
         ]
     },
-            {
-        "UpdateLevel":"Website Update(Critical)",      
-        "TimeStamp":"2025/12/25",
-        "Version":"Website 0.1.1",
+    {
+        "UpdateLevel": "Website Update(Critical)",
+        "TimeStamp": "2025/12/25",
+        "Version": "Website 0.1.2",
         "Log": [
             {
-                "Title":"网站功能更新",
-                "Content":"项目网页的更新正式版本，修复了音乐播放器的bug，优化了用户体验。",
-                "Whisper":"我怎么都想不到修复音乐播放器会把更新日志这东西搞坏"
+                "Title": "关键问题修复与功能完善",
+                "Content": "修复音乐播放器交互异常，优化预加载动画显示逻辑。重建更新日志渲染系统，实现时间线动态生成功能。",
+                "Whisper": "我怎么都想不到修复音乐播放器会把更新日志这东西搞坏"
             }
         ]
     }
