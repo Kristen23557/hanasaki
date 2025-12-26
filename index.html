@@ -1435,7 +1435,7 @@
                         <li class="navbar-item"><a class="active" href="index.html"><i class="fa-regular fa-house fa-fw"></i> 首页</a></li>
                         <li class="navbar-item"><a href="Documents.html"><i class="fa-regular fa-archive fa-fw"></i> 帮助手册</a></li>
                         <li class="navbar-item"><a href="Thanks.html"><i class="fa-regular fa-hand-holding-heart fa-fw"></i> 感谢名单</a></li>
-                        <li class="navbar-item"><a href="index.html#changelog"><i class="fa-regular fa-chart-bar fa-fw"></i> 更新日志</a></li>
+                        <li class="navbar-item"><a href="ChangeLog.html"><i class="fa-regular fa-chart-bar fa-fw"></i> 更新日志</a></li>
                     </ul>
                 </div>
                 <div class="mobile">
@@ -1449,7 +1449,7 @@
                 <li class="drawer-navbar-item"><a class="active" href="index.html"><span>首页</span><i class="fa-regular fa-house fa-sm fa-fw"></i></a></li>
                 <li class="drawer-navbar-item"><a href="Documents.html"><span>帮助手册</span><i class="fa-regular fa-archive fa-sm fa-fw"></i></a></li>
                 <li class="drawer-navbar-item"><a href="Thanks.html"><span>感谢名单</span><i class="fa-regular fa-hand-holding-heart fa-sm fa-fw"></i></a></li>
-                <li class="drawer-navbar-item"><a href="index.html#changelog"><span>更新日志</span><i class="fa-regular fa-chart-bar fa-sm fa-fw"></i></a></li>
+                <li class="drawer-navbar-item"><a href="ChangeLog.html"><span>更新日志</span><i class="fa-regular fa-chart-bar fa-sm fa-fw"></i></a></li>
             </ul>
         </div>
         <div class="window-mask" id="windowMask" role="presentation" aria-hidden="true"></div>
@@ -1481,22 +1481,6 @@
         </div>
         
         <div class="content-wrapper" id="main-wrapper">
-            <!-- 内嵌子页面：更新日志（默认隐藏，通过顶部“更新日志”进入） -->
-            <section id="changelog" class="changelog-section" aria-labelledby="changelog-title" style="display:none;">
-                <div style="max-width:1180px;margin:6px auto 28px;padding:22px;position:relative;">
-                    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
-                        <h2 id="changelog-title" style="font-family:'SJ-Narrow','Poppins',sans-serif;font-size:36px;margin:0 0 12px;color:var(--heading-color)">更新日志</h2>
-                        <div>
-                            <button id="changelog-close" class="nav-toggle" aria-label="关闭更新日志">关闭</button>
-                        </div>
-                    </div>
-                    <p class="note" style="margin-bottom:18px;color:var(--muted)">以下为花咲一秋的更新日志（按时间显示）。</p>
-                    <div class="changelog-wrap">
-                        <div class="timeline" id="timeline">正在加载…</div>
-                    </div>
-                </div>
-            </section>
-
             <!-- 头部区域 -->
             <div class="header">
                 <div class="avatar-container">
@@ -1762,107 +1746,6 @@
             }
             const s = document.createElement('style'); s.textContent='@keyframes heartPulse{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}'; document.head.appendChild(s);
         })();
-
-        // 更新日志：读取 UpdateLog.json 并渲染纵向时间线（内嵌子页面）
-        (function(){
-            const link = document.getElementById('changelog-link');
-            const section = document.getElementById('changelog');
-            const timeline = document.getElementById('timeline');
-            function animateTimelineItems(){
-                const items = timeline ? Array.from(timeline.querySelectorAll('.timeline-item')) : [];
-                items.forEach((it, idx)=>{
-                    it.style.setProperty('--delay', (idx*80)+'ms');
-                    setTimeout(()=> it.classList.add('visible'), idx*80 + 50);
-                });
-            }
-
-            function showChangelog(){
-                if(!section) return;
-                section.style.display = 'block';
-                // 隐藏主页其余内容 via body class
-                document.body.classList.add('changelog-open');
-                // push hash
-                history.replaceState && history.replaceState({}, '', '#changelog');
-                // 确保内容加载并动画
-                loadChangeLog().then(()=>{
-                    // small delay to ensure DOM appended
-                    setTimeout(()=>{
-                        animateTimelineItems();
-                    },120);
-                }).catch(()=>{
-                    // ignore
-                });
-                section.scrollIntoView({behavior:'smooth'});
-            }
-            function hideChangelog(){
-                if(!section) return;
-                document.body.classList.remove('changelog-open');
-                section.style.display = 'none';
-                // clear hash
-                try{ history.replaceState && history.replaceState({}, '', location.pathname); }catch(e){}
-            }
-            if(link){ link.addEventListener('click', (e)=>{ e.preventDefault(); showChangelog(); }); }
-            // close button
-            const closeBtn = document.getElementById('changelog-close');
-            if(closeBtn){ closeBtn.addEventListener('click', (e)=>{ e.preventDefault(); hideChangelog(); }); }
-
-            async function loadChangeLog(){
-                if(!timeline) return;
-                try{
-                    const res = await fetch('UpdateLog.json');
-                    if(!res.ok) throw new Error('读取 UpdateLog.json 失败');
-                    const data = await res.json();
-                    // 展开每个 top-level entry 的 Log 子项为单独记录并附带 TimeStamp/UpdateLevel
-                    const items = [];
-                    (data || []).forEach(entry=>{
-                        const ts = entry.TimeStamp || '';
-                        const level = entry.UpdateLevel || '';
-                        const logs = Array.isArray(entry.Log) ? entry.Log : [];
-                        logs.forEach(log => {
-                            items.push({
-                                time: ts,
-                                updateLevel: level,
-                                title: log.Title || '',
-                                content: log.Content || '',
-                                whisper: log.Whisper || ''
-                            });
-                        });
-                    });
-                    // 按时间降序（解析为 Date）
-                    items.sort((a,b)=>{ const da=new Date(a.time); const db=new Date(b.time); return db - da; });
-                    // 渲染，按年分组
-                    timeline.innerHTML = '';
-                    let lastYear = null;
-                    items.forEach(it=>{
-                        const y = (it.time || '').toString().split('/')[0] || (new Date(it.time)).getFullYear();
-                        if(y && y !== lastYear){
-                            const yearEl = document.createElement('div'); yearEl.className='timeline-year'; yearEl.textContent = y; timeline.appendChild(yearEl); lastYear = y;
-                        }
-                        const itemEl = document.createElement('div'); itemEl.className='timeline-item';
-                        const dot = document.createElement('div'); dot.className='timeline-dot';
-                        const card = document.createElement('div'); card.className='timeline-card';
-                        const title = document.createElement('h4'); title.textContent = it.title || '(更新)';
-                        const subtitle = document.createElement('div'); subtitle.className='subtitle'; subtitle.textContent = it.updateLevel || '';
-                        const content = document.createElement('div'); content.className='content'; content.innerHTML = (it.content || '').replace(/\n/g,'<br>');
-                        const whisper = document.createElement('div'); whisper.className='whisper'; whisper.textContent = it.whisper || '';
-                        const time = document.createElement('div'); time.className='time'; time.textContent = it.time || '';
-                        card.appendChild(subtitle);
-                        card.appendChild(title);
-                        card.appendChild(content);
-                        if((it.whisper||'').trim()) card.appendChild(whisper);
-                        card.appendChild(time);
-                        itemEl.appendChild(dot);
-                        itemEl.appendChild(card);
-                        timeline.appendChild(itemEl);
-                    });
-                    if(items.length===0) timeline.innerHTML = '<p class="note">暂无更新记录。</p>';
-                }catch(err){ console.error(err); timeline.innerHTML = '<p class="note">加载更新日志失败。</p>'; }
-            }
-            // 如果 URL hash 是 changelog，则自动打开
-            if(location.hash === '#changelog') showChangelog();
-            // defer load
-            document.addEventListener('DOMContentLoaded', ()=>{ loadChangeLog(); if(location.hash==='#changelog') setTimeout(()=>{ const el=document.getElementById('changelog'); el && el.scrollIntoView({behavior:'auto'}); },200); });
-        })();
     </script>
     <!-- 预加载与运行时长脚本 -->
     <script>
@@ -2019,104 +1902,197 @@
 
             document.addEventListener('DOMContentLoaded', ()=>{
                 odometer_init(); updateRuntimeAndAnniv(); setInterval(updateRuntimeAndAnniv, 1000);
-                // music toggle: clicking header toggles body; widget hover also reveals card
-                const musicToggle = document.getElementById('musicToggle');
-                const musicBody = document.getElementById('musicBody');
-                const musicWidget = document.getElementById('musicWidget');
-                if(musicToggle && musicBody){
-                    musicToggle.addEventListener('click', ()=>{
-                        const open = musicBody.classList.toggle('open');
-                        musicToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-                        if(musicWidget){ if(open){ musicWidget.classList.add('show'); musicWidget.setAttribute('aria-hidden','false'); } else { musicWidget.classList.remove('show'); musicWidget.setAttribute('aria-hidden','true'); } }
-                        if(open){ try{ trapFocusIn && trapFocusIn(musicWidget); }catch(e){} }
-                    });
-                }
-                if(musicWidget){
-                    // hover reveal
-                    let leaveTimer = null;
-                    musicWidget.addEventListener('mouseenter', ()=>{ clearTimeout(leaveTimer); musicWidget.classList.add('show'); musicWidget.setAttribute('aria-hidden','false'); });
-                    musicWidget.addEventListener('mouseleave', ()=>{ leaveTimer = setTimeout(()=>{ if(musicBody && !musicBody.classList.contains('open')){ musicWidget.classList.remove('show'); musicWidget.setAttribute('aria-hidden','true'); } }, 420); });
-                    // support keyboard Enter/Space on header
-                    musicToggle && musicToggle.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); musicToggle.click(); } });
-                }
-
-                // 初始化 Meting/APlayer：右上滑入卡片 + 首次随机自动播放（音量 15%） + 切歌弹窗
-                (function initMetingPlayer(){
-                    const FLAG = 'hanasaki_music_autoplay_v1';
-                    const metingEl = document.querySelector('meting-js');
-                    if(!metingEl) return;
-
-                    function escapeHtmlLocal(s){ return String(s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-                    function showMusicPopup(track, opts){
-                        if(!track) return;
-                        opts = opts || {};
-                        const title = track.name || track.title || '未知曲目';
-                        const artist = (track.artist && (typeof track.artist==='string'?track.artist: Array.isArray(track.artist)? track.artist.map(a=>a.name||a).join(', '): JSON.stringify(track.artist))) || track.author || '';
-                        const popup = document.getElementById('musicPopup') || (function(){ const p=document.createElement('div'); p.id='musicPopup'; p.className='music-popup'; document.body.appendChild(p); return p; })();
-                        // clear any previous hide timer
-                        try{ if(popup.__hideTimer) { clearTimeout(popup.__hideTimer); popup.__hideTimer = null; } }catch(e){}
-                        popup.innerHTML = `<div style="font-weight:700;margin-bottom:6px">即将播放：${escapeHtmlLocal(title)}</div><div style="font-size:13px;color:var(--muted)">演唱/作者：${escapeHtmlLocal(artist||'未知')}</div>`;
-                        if(opts.showEnableBtn){ const btn = document.createElement('button'); btn.className='music-enable-btn'; btn.style.cssText='margin-top:8px;padding:8px 10px;border-radius:8px;border:none;background:var(--primary-blue);color:#fff;cursor:pointer'; btn.textContent='启用声音并播放'; btn.addEventListener('click', ()=>{ try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play === 'function'){ a.play().catch(()=>{}); } popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); }catch(e){} }); popup.appendChild(btn); }
-                        // force reflow before adding class to ensure CSS transition applies
-                        void popup.offsetWidth;
-                        popup.classList.add('show');
-                        if(!opts.persistent){
-                            popup.__hideTimer = setTimeout(()=>{
-                                try{ popup.classList.remove('show'); const widget = document.querySelector('.music-widget'); if(widget) widget.classList.remove('show'); }catch(e){}
-                                try{ const m = document.querySelector('meting-js'); const a = m && (m.aplayer||m._aplayer|| (window.APlayer && window.APlayer.instances && window.APlayer.instances[0])); if(a && typeof a.play==='function') a.play(); }catch(e){}
-                            }, opts.timeout || 3000);
-                        }
-                    }
-
-                    function whenAPlayerReady(cb){
-                        const a = metingEl.aplayer || metingEl._aplayer || (window.APlayer && window.APlayer.instances && window.APlayer.instances[0]);
-                        if(!a) return setTimeout(()=>whenAPlayerReady(cb), 200);
-                        // wait for list
-                        if(!a.list || a.list.length===0) return setTimeout(()=>whenAPlayerReady(cb), 200);
-                        cb(a);
-                    }
-
-                    whenAPlayerReady((a)=>{
-                        // 设置默认音量为 15%
-                        try{ if(typeof a.setVolume === 'function') a.setVolume(0.15); else if(typeof a.volume === 'function') a.volume(0.15); else if(a.audio) a.audio.volume = 0.15; }catch(e){}
-
-                        // 当播放事件触发，显示弹窗（切歌与首次播放都会触发）
-                        try{ if(typeof a.on === 'function'){ a.on('play', ()=>{ try{ const idx = a.index || 0; const t = (a.list && a.list[idx]) || {}; // 显示即将播放信息
-                                    // 弹窗同时确保播放器卡片可见
-                                    const widget = document.querySelector('.music-widget'); if(widget){ widget.classList.add('show'); try{ trapFocusIn && trapFocusIn(widget); }catch(e){} }
-                                    showMusicPopup(t);
-                                }catch(e){} }); } }catch(e){}
-
-                        // 首次访问随机播放一次（仅尝试一次，受浏览器策略影响）
-                        try{
-                            if(!localStorage.getItem(FLAG)){
-                                const count = a.list.length || 1; const rnd = Math.floor(Math.random() * count);
-                                try{ a.index = rnd; }catch(e){}
-                                try{ if(typeof a.switch === 'function') a.switch(rnd); }catch(e){}
-                                // 尝试播放并根据 Promise 结果决定是否展示启用按钮
-                                var playResult = null;
-                                try{ playResult = (typeof a.play === 'function') ? a.play() : null; }catch(e){}
-                                const t = (a.list && a.list[rnd]) || {};
-                                const widget = document.querySelector('.music-widget'); if(widget) widget.classList.add('show');
-                                if(playResult && typeof playResult.then === 'function'){
-                                    playResult.then(function(){ showMusicPopup(t); }).catch(function(){ showMusicPopup(t, { persistent: true, showEnableBtn: true, timeout: 0 }); });
-                                } else { showMusicPopup(t); }
-                                localStorage.setItem(FLAG, '1');
+                
+                // 修复：在 DOMContentLoaded 中初始化音乐播放器
+                // ===================== 修复的音乐播放器初始化 =====================
+                // 简单初始化，让 meting-js 的 autoplay 参数生效
+                document.addEventListener('DOMContentLoaded', function() {
+                    // 等待页面完全加载
+                    setTimeout(function() {
+                        const aplayer = window.aplayers && window.aplayers[0];
+                        if (aplayer) {
+                            // 设置默认音量
+                            try {
+                                aplayer.volume(0.15);
+                                console.log('音乐播放器音量设置为 15%');
+                            } catch(e) {
+                                console.warn('设置音量失败:', e);
                             }
-                        }catch(e){}
-
-                        // widget control: clicking header toggles body; widget show state kept in sync
-                        const widget = document.getElementById('musicWidget'); const body = document.getElementById('musicBody'); const headerToggle = document.getElementById('musicToggle');
-                        if(headerToggle && widget && body){
-                            function toggleMusicWidget(){ if(!body || !widget) return; const open = body.classList.toggle('open'); if(open){ widget.classList.add('show'); widget.setAttribute('aria-hidden','false'); } else { widget.classList.remove('show'); widget.setAttribute('aria-hidden','true'); } headerToggle.setAttribute('aria-expanded', open ? 'true' : 'false'); }
-                            headerToggle.addEventListener('click', toggleMusicWidget);
-                            headerToggle.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleMusicWidget(); } });
+                            
+                            // 如果 autoplay 失败，显示提示
+                            aplayer.on('play', function() {
+                                console.log('音乐开始播放');
+                            });
+                            
+                            aplayer.on('error', function() {
+                                console.warn('音乐播放错误，可能需要用户交互');
+                            });
                         }
-                    });
-                })();
+                    }, 1000);
+                });
             });
         })();
+        
+        // ===================== 修复的音乐播放器初始化 =====================
+        function initMetingPlayerWithAutoplay() {
+            console.log('初始化音乐播放器（带自动播放）...');
+            
+            // 等待页面完全加载后初始化播放器
+            window.addEventListener('load', function() {
+                setTimeout(function() {
+                    const metingEl = document.querySelector('meting-js');
+                    if (!metingEl) {
+                        console.warn('未找到 meting-js 元素');
+                        return;
+                    }
+                    
+                    // 等待 APlayer 实例创建
+                    const checkInterval = setInterval(function() {
+                        const aplayer = window.aplayers && window.aplayers[0];
+                        if (aplayer) {
+                            clearInterval(checkInterval);
+                            console.log('APlayer 实例已找到，开始配置自动播放...');
+                            
+                            // 设置默认音量为 15%
+                            try {
+                                aplayer.volume(0.15);
+                                console.log('音量已设置为 15%');
+                            } catch(e) {
+                                console.warn('设置音量失败:', e);
+                            }
+                            
+                            // 随机选择一首歌曲
+                            const songCount = aplayer.list.audios.length;
+                            if (songCount > 0) {
+                                const randomIndex = Math.floor(Math.random() * songCount);
+                                console.log(`从 ${songCount} 首歌曲中随机选择第 ${randomIndex + 1} 首`);
+                                
+                                // 切换到随机歌曲
+                                aplayer.switch(randomIndex);
+                                
+                                // 延迟播放（等待切换完成）
+                                setTimeout(function() {
+                                    // 尝试自动播放
+                                    const playPromise = aplayer.play();
+                                    
+                                    if (playPromise !== undefined) {
+                                        playPromise.then(function() {
+                                            console.log('自动播放成功');
+                                            
+                                            // 显示当前播放歌曲信息
+                                            const currentSong = aplayer.list.audios[randomIndex];
+                                            showMusicPopup(currentSong);
+                                        }).catch(function(error) {
+                                            console.log('自动播放被浏览器阻止:', error);
+                                            
+                                            // 显示启用按钮
+                                            const currentSong = aplayer.list.audios[randomIndex];
+                                            showMusicPopup(currentSong, true);
+                                        });
+                                    }
+                                }, 500);
+                            }
+                            
+                            // 监听歌曲切换事件
+                            aplayer.on('switch', function() {
+                                const currentIndex = aplayer.list.index;
+                                const currentSong = aplayer.list.audios[currentIndex];
+                                console.log('歌曲切换到:', currentSong.name);
+                                showMusicPopup(currentSong);
+                            });
+                            
+                            // 监听播放事件
+                            aplayer.on('play', function() {
+                                const currentIndex = aplayer.list.index;
+                                const currentSong = aplayer.list.audios[currentIndex];
+                                console.log('开始播放:', currentSong.name);
+                            });
+                        }
+                    }, 100);
+                    
+                    // 超时停止检查
+                    setTimeout(function() {
+                        clearInterval(checkInterval);
+                    }, 10000);
+                }, 1000); // 延迟1秒，确保所有资源加载完成
+            });
+        }
+        
+        // 显示歌曲信息弹窗
+        function showMusicPopup(song, showEnableBtn = false) {
+            if (!song) return;
+            
+            console.log('显示歌曲信息:', song);
+            
+            // 创建或获取弹窗元素
+            let popup = document.getElementById('musicPopup');
+            if (!popup) {
+                popup = document.createElement('div');
+                popup.id = 'musicPopup';
+                popup.className = 'music-popup';
+                document.body.appendChild(popup);
+            }
+            
+            // 清除之前的定时器
+            if (popup.hideTimer) {
+                clearTimeout(popup.hideTimer);
+                popup.hideTimer = null;
+            }
+            
+            // 构建弹窗内容
+            const title = song.name || '未知曲目';
+            const artist = song.artist || song.author || '未知艺术家';
+            
+            let content = `
+                <div style="font-weight:700;margin-bottom:6px;font-size:14px;">即将播放：${escapeHtml(title)}</div>
+                <div style="font-size:12px;color:var(--muted)">演唱/作者：${escapeHtml(artist)}</div>
+            `;
+            
+            if (showEnableBtn) {
+                content += `
+                    <button id="enableMusicBtn" style="margin-top:8px;padding:6px 12px;border-radius:6px;border:none;background:var(--primary-blue);color:#fff;cursor:pointer;font-size:12px;">
+                        启用声音并播放
+                    </button>
+                `;
+            }
+            
+            popup.innerHTML = content;
+            
+            // 强制重排确保 CSS 过渡生效
+            void popup.offsetWidth;
+            popup.classList.add('show');
+            
+            // 添加启用按钮事件监听
+            if (showEnableBtn) {
+                const enableBtn = document.getElementById('enableMusicBtn');
+                if (enableBtn) {
+                    enableBtn.addEventListener('click', function() {
+                        const aplayer = window.aplayers && window.aplayers[0];
+                        if (aplayer) {
+                            aplayer.play().catch(function(error) {
+                                console.warn('播放失败:', error);
+                            });
+                        }
+                        popup.classList.remove('show');
+                    }, { once: true });
+                }
+            }
+            
+            // 设置自动隐藏定时器（如果不显示启用按钮）
+            if (!showEnableBtn) {
+                popup.hideTimer = setTimeout(function() {
+                    popup.classList.remove('show');
+                }, 3000);
+            }
+        }
+        
+        // HTML 转义函数
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
     </script>
 
     <!-- 右上隐藏控件：音乐播放器卡片（鼠标悬停或点击头部展开） -->
@@ -2129,7 +2105,7 @@
             <div style="font-size:12px;color:var(--muted)">悬停展开或点击控制</div>
         </div>
         <div class="music-body" id="musicBody">
-            <meting-js server="netease" type="playlist" id="5034562952"></meting-js>
+            <meting-js server="netease" type="playlist" id="5034562952" autoplay="true"></meting-js>
         </div>
     </div>
 
@@ -2163,231 +2139,6 @@
         </div>
     </div>
 
-    //<!-- 在 </body> 标签之前添加这段修复代码 -->
-    <script>
-    // 修复音乐播放器卡片点击问题
-    (function fixMusicWidgetInteraction() {
-        console.log('开始修复音乐播放器交互...');
-        
-        // 等待页面和播放器完全加载
-        setTimeout(function() {
-            const musicWidget = document.getElementById('musicWidget');
-            const musicBody = document.getElementById('musicBody');
-            const musicToggle = document.getElementById('musicToggle');
-            
-            if (!musicWidget || !musicBody || !musicToggle) {
-                console.warn('音乐播放器元素未找到，重试...');
-                setTimeout(fixMusicWidgetInteraction, 500);
-                return;
-            }
-            
-            console.log('找到音乐播放器元素，开始修复...');
-            
-            // 1. 重新绑定头部点击事件
-            function setupToggleClick() {
-                // 清理原有事件
-                const newToggle = musicToggle.cloneNode(true);
-                musicToggle.parentNode.replaceChild(newToggle, musicToggle);
-                
-                const newToggleElement = document.getElementById('musicToggle');
-                
-                newToggleElement.addEventListener('click', function(e) {
-                    console.log('音乐卡片头部被点击');
-                    e.stopImmediatePropagation();
-                    e.preventDefault();
-                    
-                    const body = document.getElementById('musicBody');
-                    const widget = document.getElementById('musicWidget');
-                    
-                    if (!body || !widget) return;
-                    
-                    const isOpen = body.classList.contains('open');
-                    
-                    if (isOpen) {
-                        // 关闭
-                        body.classList.remove('open');
-                        widget.classList.remove('show');
-                        widget.setAttribute('aria-hidden', 'true');
-                        newToggleElement.setAttribute('aria-expanded', 'false');
-                    } else {
-                        // 打开
-                        body.classList.add('open');
-                        widget.classList.add('show');
-                        widget.setAttribute('aria-hidden', 'false');
-                        newToggleElement.setAttribute('aria-expanded', 'true');
-                    }
-                    
-                    return false;
-                }, true); // 使用捕获阶段，确保最先执行
-            }
-            
-            // 2. 修复 CSS 样式，确保可点击
-            function applyCSSCriticalFixes() {
-                // 创建关键样式修复
-                const style = document.createElement('style');
-                style.textContent = `
-                    /* 关键修复：确保音乐卡片头部始终可点击 */
-                    #musicWidget .music-header {
-                        pointer-events: auto !important;
-                        cursor: pointer !important;
-                        z-index: 10002 !important;
-                        position: relative;
-                    }
-                    
-                    /* 隔离 APlayer 的点击事件 */
-                    #musicWidget .music-body {
-                        pointer-events: none !important;
-                    }
-                    
-                    /* 但允许 APlayer 内部控件可点击 */
-                    #musicWidget .music-body .aplayer,
-                    #musicWidget .music-body iframe {
-                        pointer-events: auto !important;
-                    }
-                    
-                    /* APlayer 控件内部元素 */
-                    .aplayer .aplayer-pic,
-                    .aplayer .aplayer-info,
-                    .aplayer .aplayer-controller,
-                    .aplayer .aplayer-list {
-                        pointer-events: auto !important;
-                    }
-                    
-                    /* 确保悬停效果正常工作 */
-                    #musicWidget:hover {
-                        transform: translateX(0) !important;
-                    }
-                    
-                    #musicWidget.show {
-                        transform: translateX(0) !important;
-                    }
-                    
-                    /* 强制头部区域层级 */
-                    .music-header * {
-                        pointer-events: none !important;
-                    }
-                    
-                    .music-header {
-                        pointer-events: auto !important;
-                        position: relative;
-                        z-index: 9999 !important;
-                    }
-                `;
-                document.head.appendChild(style);
-                
-                // 直接样式修复
-                const toggle = document.getElementById('musicToggle');
-                if (toggle) {
-                    toggle.style.cssText += `
-                        cursor: pointer !important;
-                        pointer-events: auto !important;
-                        position: relative;
-                        z-index: 9999;
-                    `;
-                }
-                
-                const widget = document.getElementById('musicWidget');
-                if (widget) {
-                    widget.style.cssText += `
-                        pointer-events: auto !important;
-                    `;
-                }
-            }
-            
-            // 3. 修复鼠标悬停行为
-            function setupHoverBehavior() {
-                const widget = document.getElementById('musicWidget');
-                let hoverTimer = null;
-                let isMouseOver = false;
-                
-                widget.addEventListener('mouseenter', function() {
-                    isMouseOver = true;
-                    clearTimeout(hoverTimer);
-                    widget.classList.add('show');
-                    widget.setAttribute('aria-hidden', 'false');
-                });
-                
-                widget.addEventListener('mouseleave', function() {
-                    isMouseOver = false;
-                    clearTimeout(hoverTimer);
-                    
-                    const body = document.getElementById('musicBody');
-                    if (body && !body.classList.contains('open')) {
-                        hoverTimer = setTimeout(() => {
-                            if (!isMouseOver) {
-                                widget.classList.remove('show');
-                                widget.setAttribute('aria-hidden', 'true');
-                            }
-                        }, 300);
-                    }
-                });
-            }
-            
-            // 4. 检查并修复 APlayer 事件冲突
-            function fixAPlayerEventConflict() {
-                // 等待 APlayer 加载完成
-                const checkInterval = setInterval(() => {
-                    const aplayer = document.querySelector('.aplayer');
-                    if (aplayer) {
-                        clearInterval(checkInterval);
-                        console.log('APlayer 已加载，修复事件冲突');
-                        
-                        // 为 APlayer 添加包装层
-                        const wrapper = document.createElement('div');
-                        wrapper.style.cssText = `
-                            position: relative;
-                            width: 100%;
-                            height: 100%;
-                        `;
-                        
-                        // 如果 APlayer 有父元素
-                        if (aplayer.parentNode) {
-                            aplayer.parentNode.insertBefore(wrapper, aplayer);
-                            wrapper.appendChild(aplayer);
-                            
-                            // 添加保护层防止事件冒泡
-                            const protector = document.createElement('div');
-                            protector.style.cssText = `
-                                position: absolute;
-                                top: 0;
-                                left: 0;
-                                width: 100%;
-                                height: 40px;
-                                background: transparent;
-                                z-index: 99999;
-                            `;
-                            wrapper.appendChild(protector);
-                        }
-                        
-                        // 调整 APlayer 的事件处理
-                        aplayer.style.pointerEvents = 'none';
-                        
-                        // 允许控制按钮可点击
-                        const controls = aplayer.querySelectorAll(
-                            '.aplayer-pic, .aplayer-info, .aplayer-controller, .aplayer-list'
-                        );
-                        controls.forEach(control => {
-                            control.style.pointerEvents = 'auto';
-                        });
-                    }
-                }, 100);
-                
-                // 5秒后停止检查
-                setTimeout(() => clearInterval(checkInterval), 5000);
-            }
-            
-            // 执行所有修复
-            setupToggleClick();
-            applyCSSCriticalFixes();
-            setupHoverBehavior();
-            fixAPlayerEventConflict();
-            
-            console.log('音乐播放器修复完成');
-            
-        }, 1000); // 延迟1秒执行，确保页面元素加载完成
-    })();
-    </script>
-</body>
     <script>
         // Animation diagnostics: detect anime.js availability and record errors for HTTPS debugging
         (function(){
@@ -2438,4 +2189,5 @@
             }catch(e){}
         }
     </script>
+</body>
 </html>

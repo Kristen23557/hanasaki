@@ -2,7 +2,8 @@
     {
         "UpdateLevel": "First Release",
         "TimeStamp": "2025/12/21",
-        "Version": "Hanasaki 0.1.0",
+        "Type":"Hanasaki",
+        "Version": "0.1.0",
         "Log": [
             {
                 "Title": "项目初始版本发布",
@@ -14,7 +15,8 @@
     {
         "UpdateLevel": "Website Release",
         "TimeStamp": "2025/12/23",
-        "Version": "Website 0.1.0",
+        "Type":"Website",
+        "Version": "0.1.0",
         "Log": [
             {
                 "Title": "项目网站初始版本发布",
@@ -26,7 +28,8 @@
     {
         "UpdateLevel": "Website Update(Minor)",
         "TimeStamp": "2025/12/24",
-        "Version": "Website 0.1.1 snapshot",
+        "Type":"Website",
+        "Version": "0.1.1 snapshot",
         "Log": [
             {
                 "Title": "网站功能更新",
@@ -38,7 +41,8 @@
     {
         "UpdateLevel": "Website Update(Critical)",
         "TimeStamp": "2025/12/25",
-        "Version": "Website 0.1.2",
+        "Type":"Website",
+        "Version": "0.1.2",
         "Log": [
             {
                 "Title": "关键问题修复与功能完善",
