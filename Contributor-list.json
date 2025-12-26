@@ -11,36 +11,53 @@
     "groups": [
       {
         "name": "云忆",
-        "group_id": "暂时留空",
+        "group_id": "729317941",
         "members": [
-          { "name": "霖鸮", "avatar": "support1.png" },
-          { "name": "司空", "avatar": "support2.png" }
+          { "name": "霖鸮", "avatar": "LinXiao.jpg" },
+          { "name": "司空", "avatar": "SiKong.jpg" },
+          { "name": "安静", "avatar": "AnJing.jpg" },
+          { "name": "开心", "avatar": "KaiXin.jpg" },
+          { "name": "洛绒", "avatar": "LuoRong.jpg" },
+          { "name": "四叶铃", "avatar": "SiYeLing.jpg" },
+          { "name": "Nerone", "avatar": "Nerone.jpg" },
+          { "name": "人间失格", "avatar": "RenJianShiGe.jpg" },
+          { "name": "室内系", "avatar": "ShiNeiXi.jpg" },
+          { "name": "天体", "avatar": "TianTi.jpg" }
         ]
       },
             {
         "name": "与路小行的小窝",
         "group_id": "暂时留空",
         "members": [
-          { "name": "与路小行", "avatar": "" },
-          { "name": "Std", "avatar": "" },
-          { "name": "Stanley", "avatar": "" }
+          { "name": "与路小行", "avatar": "YuLuXiaoXing.jpg" },
+          { "name": "StdCrying", "avatar": "StdCrying.jpg" },
+          { "name": "Stanley", "avatar": "Stanley.jpg" },
+          { "name": "海残月和我", "avatar": "HaiCanYueHeWo.jpg" },
+          { "name": "海风和浪风", "avatar": "HaiFengHeLangFeng.jpg" },
+          { "name": "狼夫的口口口", "avatar": "LangFuDeKouKouKou.jpg" },
+          { "name": "精神状态极佳的李箱", "avatar": "JingShenZhuangTaiJiJiaDeLiXiang.jpg" }
         ]
       }
     ],
     "private_users": [
-      { "name": "ZhongTwo", "avatar": "" },
-      { "name": "Stanley", "avatar": "" },
-      { "name": "久年", "avatar": "" },
-      { "name": "失约", "avatar": "" },
-      { "name": "miboluo", "avatar": "" }
+      { "name": "ZhongTwo", "avatar": "ZhongTwo.jpg" },
+      { "name": "Stanley", "avatar": "Stanley.jpg" },
+      { "name": "久年", "avatar": "JiuNian.jpg" },
+      { "name": "失约", "avatar": "ShiYue.jpg" },
+      { "name": "miboluo", "avatar": "MiBoLuo.jpg" },
+      { "name": "霖鸮", "avatar": "LinXiao.jpg" },
+      { "name": "司空", "avatar": "SiKong.jpg" },
+      { "name": "Hazel", "avatar": "Hazel.jpg" }
     ]
   },
   {
     "type": "sponsors",
     "name": "赞助者",
     "members": [
-      { "name": "ZhongTwo", "avatar": "sponsor1.png" },
-      { "name": "Stanley", "avatar": "" }
+      { "name": "ZhongTwo", "avatar": "ZhongTwo.jpg" },
+      { "name": "Stanley", "avatar": "Stanley.jpg" },
+      { "name": "霖鸮", "avatar": "LinXiao.jpg" },
+      { "name": "司空", "avatar": "SiKong.jpg" }
     ]
   }
 ]

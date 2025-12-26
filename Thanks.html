@@ -638,7 +638,7 @@
     <script>
         // 运行时长 + 周年脚本（Thanks 页面）
         (function(){
-            const blogStartDate = new Date(2025,9,28,0,0,0);
+            const blogStartDate = new Date(2025,9,12,0,0,0);
             let lastAnnivCount = null;
             function odometer_init(){ document.querySelectorAll('.odometer').forEach(e=>{ try{ new Odometer({ el: e, format: '(ddd)', duration: 200 }); }catch(err){} }); }
             function animateNumber(el){ if(!el) return; el.classList.remove('pop'); void el.offsetWidth; el.classList.add('pop'); setTimeout(()=>el.classList.remove('pop'),600); }
