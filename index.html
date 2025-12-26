@@ -113,6 +113,47 @@
         .music-body.open{ height:220px }
         .music-popup{ position:fixed; right:22px; top:72px; z-index:11003; background:var(--card-bg); padding:10px 12px; border-radius:10px; box-shadow:0 12px 30px rgba(0,0,0,0.12); display:block; min-width:240px; transform: translateX(calc(100% - 48px)); opacity:0; pointer-events:none; transition: transform 320ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease; }
         .music-popup.show{ transform: translateX(0); opacity:1; pointer-events:auto }
+        /* 增强的音乐弹窗样式 */
+        .music-popup {
+            position: fixed;
+            right: 22px;
+            top: 72px;
+            z-index: 11003;
+            background: var(--card-bg);
+            padding: 10px 12px;
+            border-radius: 10px;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.12);
+            display: block;
+            min-width: 240px;
+            transform: translateX(calc(100% - 48px));
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 320ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease;
+        }
+
+        .music-popup.show {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* 启用声音按钮样式 */
+        .music-enable-btn {
+            margin-top: 8px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary-blue);
+            color: #fff;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s ease;
+        }
+
+        .music-enable-btn:hover {
+            background: var(--dark-blue);
+            transform: translateY(-1px);
+        }
         /* ensure numbers fit: keep moderate size; labels are bold */
         .runtime-widget .anniv-row .anniv-label{ font-size:13px; letter-spacing:0.2px; font-weight:700 }
         .runtime-widget .anniv-row .anniv-count{ font-size:16px; margin-left:12px; font-weight:800 }
@@ -237,6 +278,34 @@
                 document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape'){ if(navbarDrawer && navbarDrawer.classList.contains('open')){ closeDrawer(); } const musicWidget = document.getElementById('musicWidget'); const musicBody = document.getElementById('musicBody'); if(musicBody && musicBody.classList.contains('open')){ musicBody.classList.remove('open'); if(musicWidget) { musicWidget.classList.remove('show'); musicWidget.setAttribute('aria-hidden','true'); } } } });
             });
         </script>
+
+
+        <style>
+        /* 确保音乐弹窗不会被遮挡 */
+            .music-popup {
+                position: fixed !important;
+                right: 22px !important;
+                top: 72px !important;
+                z-index: 11004 !important; /* 提高z-index，确保在最上层 */
+                background: var(--card-bg) !important;
+                padding: 10px 12px !important;
+                border-radius: 10px !important;
+                box-shadow: 0 12px 30px rgba(0,0,0,0.12) !important;
+                display: block !important;
+                min-width: 240px !important;
+                transform: translateX(calc(100% - 48px)) !important;
+                opacity: 0 !important;
+                pointer-events: none !important;
+                transition: transform 320ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease !important;
+                border: 1px solid var(--header-border) !important;
+            }
+
+            .music-popup.show {
+                transform: translateX(0) !important;
+                opacity: 1 !important;
+                pointer-events: auto !important;
+            }
+        </style>
 
         <style>
             /* 修复音乐播放器卡片悬停和点击问题 */
@@ -1934,164 +2003,276 @@
         })();
         
         // ===================== 修复的音乐播放器初始化 =====================
-        function initMetingPlayerWithAutoplay() {
-            console.log('初始化音乐播放器（带自动播放）...');
-            
-            // 等待页面完全加载后初始化播放器
-            window.addEventListener('load', function() {
-                setTimeout(function() {
-                    const metingEl = document.querySelector('meting-js');
-                    if (!metingEl) {
-                        console.warn('未找到 meting-js 元素');
-                        return;
+        // 初始化 Meting/APlayer：播放器 + 切歌弹窗
+        (function initMetingPlayer() {
+            const FLAG = 'hanasaki_music_autoplay_v1';
+            const metingEl = document.querySelector('meting-js');
+            if (!metingEl) return;
+
+            function escapeHtmlLocal(s) {
+                return String(s || '').replace(/[&<>"']/g, c => ({
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#39;'
+                }[c]));
+            }
+
+            // 获取播放器当前信息
+            function getCurrentTrackInfo() {
+                try {
+                    // 从 APlayer 的 DOM 元素获取信息（这是最可靠的方式）
+                    const playerContainer = document.querySelector('.aplayer');
+                    if (playerContainer) {
+                        const titleEl = playerContainer.querySelector('.aplayer-title');
+                        const authorEl = playerContainer.querySelector('.aplayer-author');
+                        const picEl = playerContainer.querySelector('.aplayer-pic img');
+                        
+                        const title = titleEl ? titleEl.textContent || titleEl.innerText : '';
+                        const author = authorEl ? authorEl.textContent || authorEl.innerText : '';
+                        const picUrl = picEl ? picEl.src : '';
+                        
+                        if (title || author) {
+                            return {
+                                name: title,
+                                title: title,
+                                artist: author,
+                                author: author,
+                                pic: picUrl
+                            };
+                        }
                     }
                     
-                    // 等待 APlayer 实例创建
-                    const checkInterval = setInterval(function() {
-                        const aplayer = window.aplayers && window.aplayers[0];
-                        if (aplayer) {
-                            clearInterval(checkInterval);
-                            console.log('APlayer 实例已找到，开始配置自动播放...');
-                            
-                            // 设置默认音量为 15%
-                            try {
-                                aplayer.volume(0.15);
-                                console.log('音量已设置为 15%');
-                            } catch(e) {
-                                console.warn('设置音量失败:', e);
-                            }
-                            
-                            // 随机选择一首歌曲
-                            const songCount = aplayer.list.audios.length;
-                            if (songCount > 0) {
-                                const randomIndex = Math.floor(Math.random() * songCount);
-                                console.log(`从 ${songCount} 首歌曲中随机选择第 ${randomIndex + 1} 首`);
-                                
-                                // 切换到随机歌曲
-                                aplayer.switch(randomIndex);
-                                
-                                // 延迟播放（等待切换完成）
-                                setTimeout(function() {
-                                    // 尝试自动播放
-                                    const playPromise = aplayer.play();
-                                    
-                                    if (playPromise !== undefined) {
-                                        playPromise.then(function() {
-                                            console.log('自动播放成功');
-                                            
-                                            // 显示当前播放歌曲信息
-                                            const currentSong = aplayer.list.audios[randomIndex];
-                                            showMusicPopup(currentSong);
-                                        }).catch(function(error) {
-                                            console.log('自动播放被浏览器阻止:', error);
-                                            
-                                            // 显示启用按钮
-                                            const currentSong = aplayer.list.audios[randomIndex];
-                                            showMusicPopup(currentSong, true);
-                                        });
-                                    }
-                                }, 500);
-                            }
-                            
-                            // 监听歌曲切换事件
-                            aplayer.on('switch', function() {
-                                const currentIndex = aplayer.list.index;
-                                const currentSong = aplayer.list.audios[currentIndex];
-                                console.log('歌曲切换到:', currentSong.name);
-                                showMusicPopup(currentSong);
-                            });
-                            
-                            // 监听播放事件
-                            aplayer.on('play', function() {
-                                const currentIndex = aplayer.list.index;
-                                const currentSong = aplayer.list.audios[currentIndex];
-                                console.log('开始播放:', currentSong.name);
-                            });
+                    // 从播放器实例获取信息
+                    const a = metingEl.aplayer || metingEl._aplayer || (window.APlayer && window.APlayer.instances && window.APlayer.instances[0]);
+                    if (a) {
+                        const idx = a.index || 0;
+                        if (a.list && a.list.length > idx) {
+                            const track = a.list[idx];
+                            console.log('从播放器实例获取歌曲信息:', track);
+                            return track;
                         }
-                    }, 100);
-                    
-                    // 超时停止检查
-                    setTimeout(function() {
-                        clearInterval(checkInterval);
-                    }, 10000);
-                }, 1000); // 延迟1秒，确保所有资源加载完成
-            });
-        }
-        
-        // 显示歌曲信息弹窗
-        function showMusicPopup(song, showEnableBtn = false) {
-            if (!song) return;
-            
-            console.log('显示歌曲信息:', song);
-            
-            // 创建或获取弹窗元素
-            let popup = document.getElementById('musicPopup');
-            if (!popup) {
-                popup = document.createElement('div');
-                popup.id = 'musicPopup';
-                popup.className = 'music-popup';
-                document.body.appendChild(popup);
-            }
-            
-            // 清除之前的定时器
-            if (popup.hideTimer) {
-                clearTimeout(popup.hideTimer);
-                popup.hideTimer = null;
-            }
-            
-            // 构建弹窗内容
-            const title = song.name || '未知曲目';
-            const artist = song.artist || song.author || '未知艺术家';
-            
-            let content = `
-                <div style="font-weight:700;margin-bottom:6px;font-size:14px;">即将播放：${escapeHtml(title)}</div>
-                <div style="font-size:12px;color:var(--muted)">演唱/作者：${escapeHtml(artist)}</div>
-            `;
-            
-            if (showEnableBtn) {
-                content += `
-                    <button id="enableMusicBtn" style="margin-top:8px;padding:6px 12px;border-radius:6px;border:none;background:var(--primary-blue);color:#fff;cursor:pointer;font-size:12px;">
-                        启用声音并播放
-                    </button>
-                `;
-            }
-            
-            popup.innerHTML = content;
-            
-            // 强制重排确保 CSS 过渡生效
-            void popup.offsetWidth;
-            popup.classList.add('show');
-            
-            // 添加启用按钮事件监听
-            if (showEnableBtn) {
-                const enableBtn = document.getElementById('enableMusicBtn');
-                if (enableBtn) {
-                    enableBtn.addEventListener('click', function() {
-                        const aplayer = window.aplayers && window.aplayers[0];
-                        if (aplayer) {
-                            aplayer.play().catch(function(error) {
-                                console.warn('播放失败:', error);
-                            });
-                        }
-                        popup.classList.remove('show');
-                    }, { once: true });
+                    }
+                } catch (e) {
+                    console.error('获取歌曲信息失败:', e);
                 }
+                return null;
             }
             
-            // 设置自动隐藏定时器（如果不显示启用按钮）
-            if (!showEnableBtn) {
-                popup.hideTimer = setTimeout(function() {
+            // 增强的歌曲信息显示函数
+            function showEnhancedMusicPopup() {
+                const track = getCurrentTrackInfo();
+                if (!track) {
+                    console.log('未获取到歌曲信息');
+                    return;
+                }
+                
+                console.log('显示歌曲信息:', track);
+                
+                // 提取歌曲信息（支持多种格式）
+                let title = '';
+                let artist = '';
+                
+                // 尝试多种可能的字段名
+                if (track.name) title = track.name;
+                else if (track.title) title = track.title;
+                else if (track.song) title = track.song;
+                
+                if (track.artist) {
+                    if (typeof track.artist === 'string') artist = track.artist;
+                    else if (Array.isArray(track.artist)) artist = track.artist.map(a => a.name || a).join(', ');
+                    else if (track.artist.name) artist = track.artist.name;
+                } else if (track.author) {
+                    artist = track.author;
+                } else if (track.singer) {
+                    artist = track.singer;
+                }
+                
+                // 如果标题为空，尝试从播放器DOM获取
+                if (!title) {
+                    const titleEl = document.querySelector('.aplayer-title');
+                    if (titleEl) title = titleEl.textContent || titleEl.innerText;
+                }
+                
+                if (!artist) {
+                    const authorEl = document.querySelector('.aplayer-author');
+                    if (authorEl) artist = authorEl.textContent || authorEl.innerText;
+                }
+                
+                // 最终处理
+                title = title || '未知曲目';
+                artist = artist || '未知艺术家';
+                
+                // 创建或获取弹窗元素
+                let popup = document.getElementById('musicPopup');
+                if (!popup) {
+                    popup = document.createElement('div');
+                    popup.id = 'musicPopup';
+                    popup.className = 'music-popup';
+                    document.body.appendChild(popup);
+                }
+                
+                // 清除之前的定时器
+                if (popup.__hideTimer) {
+                    clearTimeout(popup.__hideTimer);
+                    popup.__hideTimer = null;
+                }
+                
+                // 构建弹窗内容
+                const hasAlbum = track.album || track.album_name;
+                const albumInfo = hasAlbum ? `<div style="font-size: 12px; color: var(--muted); margin-top: 2px;">
+                    专辑：${escapeHtmlLocal(track.album || track.album_name || '')}
+                </div>` : '';
+                
+                popup.innerHTML = `
+                    <div style="display: flex; align-items: flex-start; gap: 12px;">
+                        ${track.pic ? `<img src="${escapeHtmlLocal(track.pic)}" style="width: 48px; height: 48px; border-radius: 6px; object-fit: cover;">` : ''}
+                        <div style="flex: 1;">
+                            <div style="font-weight: 700; font-size: 14px; margin-bottom: 4px; color: var(--heading-color);">
+                                ${escapeHtmlLocal(title)}
+                            </div>
+                            <div style="font-size: 12px; color: var(--muted);">
+                                演唱：${escapeHtmlLocal(artist)}
+                            </div>
+                            ${albumInfo}
+                        </div>
+                    </div>
+                `;
+                
+                // 显示弹窗
+                void popup.offsetWidth; // 触发重排
+                popup.classList.add('show');
+                
+                // 显示播放器卡片
+                const musicWidget = document.getElementById('musicWidget');
+                const musicToggle = document.getElementById('musicToggle');
+                const isManuallyOpened = musicToggle ? musicToggle.getAttribute('aria-expanded') === 'true' : false;
+                
+                if (musicWidget) {
+                    musicWidget.classList.add('show');
+                    musicWidget.setAttribute('aria-hidden', 'false');
+                }
+                
+                // 3.5秒后自动隐藏
+                popup.__hideTimer = setTimeout(() => {
                     popup.classList.remove('show');
-                }, 3000);
+                    // 如果不是手动打开，隐藏播放器卡片
+                    if (!isManuallyOpened && musicWidget) {
+                        musicWidget.classList.remove('show');
+                        musicWidget.setAttribute('aria-hidden', 'true');
+                    }
+                }, 3500);
             }
-        }
-        
-        // HTML 转义函数
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
+
+            function whenAPlayerReady(cb) {
+                const a = metingEl.aplayer || metingEl._aplayer || (window.APlayer && window.APlayer.instances && window.APlayer.instances[0]);
+                if (!a) return setTimeout(() => whenAPlayerReady(cb), 200);
+                // wait for list
+                if (!a.list || a.list.length === 0) return setTimeout(() => whenAPlayerReady(cb), 200);
+                cb(a);
+            }
+
+            // 初始化播放器
+            whenAPlayerReady((a) => {
+                console.log('APlayer 已准备好:', a);
+                
+                // 设置默认音量为 15%
+                try {
+                    if (typeof a.setVolume === 'function') a.setVolume(0.15);
+                    else if (typeof a.volume === 'function') a.volume(0.15);
+                    else if (a.audio) a.audio.volume = 0.15;
+                } catch (e) {}
+                
+                // 监听各种播放器事件
+                try {
+                    // 监听播放事件
+                    a.on('play', () => {
+                        console.log('播放事件触发');
+                        setTimeout(showEnhancedMusicPopup, 100);
+                    });
+                    
+                    // 监听歌曲切换事件
+                    a.on('listswitch', (e) => {
+                        console.log('歌曲切换事件:', e);
+                        setTimeout(showEnhancedMusicPopup, 100);
+                    });
+                    
+                    // 监听暂停事件
+                    a.on('pause', () => {
+                        const popup = document.getElementById('musicPopup');
+                        if (popup) {
+                            popup.classList.remove('show');
+                        }
+                    });
+                    
+                } catch (e) {
+                    console.error('绑定播放器事件失败:', e);
+                    
+                    // 备用方案：监听播放器DOM的变化
+                    const playerContainer = document.querySelector('.aplayer');
+                    if (playerContainer) {
+                        const observer = new MutationObserver(() => {
+                            if (document.querySelector('.aplayer-playing')) {
+                                setTimeout(showEnhancedMusicPopup, 300);
+                            }
+                        });
+                        
+                        observer.observe(playerContainer, {
+                            childList: true,
+                            subtree: true,
+                            characterData: true
+                        });
+                    }
+                }
+                
+                // 首次访问随机播放一次
+                try {
+                    if (!localStorage.getItem(FLAG)) {
+                        const count = a.list.length || 1;
+                        const rnd = Math.floor(Math.random() * count);
+                        
+                        // 设置随机歌曲
+                        try {
+                            if (typeof a.switch === 'function') {
+                                a.switch(rnd);
+                            } else {
+                                a.index = rnd;
+                            }
+                        } catch (e) { }
+                        
+                        // 显示首次播放的歌曲信息
+                        setTimeout(() => {
+                            showEnhancedMusicPopup();
+                            
+                            // 尝试自动播放
+                            if (typeof a.play === 'function') {
+                                a.play().catch(err => {
+                                    console.log('自动播放被阻止:', err);
+                                    // 显示启用声音按钮
+                                    const popup = document.getElementById('musicPopup');
+                                    if (popup) {
+                                        const btn = document.createElement('button');
+                                        btn.className = 'music-enable-btn';
+                                        btn.textContent = '点击启用声音';
+                                        btn.style.cssText = 'margin-top: 8px; padding: 8px 10px; border-radius: 8px; border: none; background: var(--primary-blue); color: #fff; cursor: pointer; width: 100%;';
+                                        btn.addEventListener('click', () => {
+                                            a.play();
+                                            btn.remove();
+                                        });
+                                        popup.appendChild(btn);
+                                    }
+                                });
+                            }
+                        }, 500);
+                        
+                        localStorage.setItem(FLAG, '1');
+                    }
+                } catch (e) {
+                    console.error('首次播放设置失败:', e);
+                }
+            });
+        })();
         
     </script>
 
@@ -2189,5 +2370,7 @@
             }catch(e){}
         }
     </script>
+    <!-- 音乐弹窗（歌曲切换提示） -->
+    <div class="music-popup" id="musicPopup"></div>
 </body>
 </html>

@@ -3,6 +3,7 @@
         "UpdateLevel": "First Release",
         "TimeStamp": "2025/12/21",
         "Type":"Hanasaki",
+        "special":"None",
         "Version": "0.1.0",
         "Log": [
             {
@@ -16,6 +17,7 @@
         "UpdateLevel": "Website Release",
         "TimeStamp": "2025/12/23",
         "Type":"Website",
+        "special":"None",
         "Version": "0.1.0",
         "Log": [
             {
@@ -29,6 +31,7 @@
         "UpdateLevel": "Website Update(Minor)",
         "TimeStamp": "2025/12/24",
         "Type":"Website",
+        "special":"None",
         "Version": "0.1.1 snapshot",
         "Log": [
             {
@@ -42,12 +45,41 @@
         "UpdateLevel": "Website Update(Critical)",
         "TimeStamp": "2025/12/25",
         "Type":"Website",
+        "special":"None",
         "Version": "0.1.2",
         "Log": [
             {
                 "Title": "关键问题修复与功能完善",
                 "Content": "修复音乐播放器交互异常，优化预加载动画显示逻辑。重建更新日志渲染系统，实现时间线动态生成功能。",
                 "Whisper": "我怎么都想不到修复音乐播放器会把更新日志这东西搞坏"
+            }
+        ]
+    },
+        {
+        "UpdateLevel": "First Lockdown",
+        "TimeStamp": "2025/12/25",
+        "Type":"Hanasaki",
+        "special": "Lockdown",
+        "Version": "0.1.0 Lockdown",
+        "Log": [
+            {
+                "Title": "项目0.1.0版本 停机维护",
+                "Content": "花咲一秋项目首次停机维护,这是必要的,预计时常10分钟之内恢复正常运作.",
+                "Whisper": "不用担心,很快就能重新连接!"
+            }
+        ]
+    },
+        {
+        "UpdateLevel": "Website Update(Critical)",
+        "TimeStamp": "2025/12/25",
+        "Type":"Website",
+        "special":"None",
+        "Version": "0.2.0 Prelease",
+        "Log": [
+            {
+                "Title": "关键问题修复与功能完善",
+                "Content": "完整的修复了所有功能,准备进行发行,进入0.2.0版本开发阶段.",
+                "Whisper": "进度好快,真是太快了,我的天"
             }
         ]
     }
