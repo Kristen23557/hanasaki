@@ -85,15 +85,43 @@
     },
     {
         "UpdateLevel": "Normal Lockdown",
-        "TimeStamp": "2026/01/01",
+        "TimeStamp": "2026/01/01 19:00",
         "Type":"Hanasaki",
         "special":"Lockdown",
-        "Version": "0.1.0 Lockdown 2",
+        "Version": "0.1.0 Lockdown 2 Subcore pre-lock",
         "Log": [
             {
                 "Title": "项目0.1.0版本 停机维护",
-                "Content": "花咲一秋项目停机维护,这是必要的,预计时常10分钟之内恢复正常运作.",
+                "Content": "花咲一秋项目停机维护,这是必要的,为subcore更新做好准备.",
                 "Whisper": "什么，居然有人天天玩注入?!"
+            }
+        ]
+    },
+        {
+        "UpdateLevel": "Hanasaki Subcore Update",
+        "TimeStamp": "2026/01/01 19:30",
+        "Type":"Hanasaki",
+        "special":"None",
+        "Version": "0.1.1",
+        "Log": [
+            {
+                "Title": "项目0.1.1版本 Subcore更新",
+                "Content": "为hanasaki subcore进行了更新维护,包含内容和功能扩充,进行了一次数据库清洗,具体内容如下:清扫掉了垃圾数据;QQ空间功能完成了更新;新增了印象和好感度,这是个黑箱功能,不提供数据查询;新增了天气查询功能;新增了智能提醒功能;新增了失忆功能(需要权限,不准备下放总权限);新增了暂时静音功能,可在有权限时让hanasaki暂时不接受消息;主动聊天功能更新,效果更好了;戳一戳功能回归,现在可以戳戳戳戳戳~了",
+                "Whisper": "再玩注入死老冯子!"
+            }
+        ]
+    },
+            {
+        "UpdateLevel": "Website Update(Critical)",
+        "TimeStamp": "2026/01/01 20:00",
+        "Type":"Website",
+        "special":"None",
+        "Version": "0.3.0 Prelease",
+        "Log": [
+            {
+                "Title": "帮助手册页面实现",
+                "Content": "帮助手册页面已经可见,可以查看帮助内容,正在完善中.",
+                "Whisper": "你看这个懒货做了多久才把帮助手册做出来"
             }
         ]
     }
