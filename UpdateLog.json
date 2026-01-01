@@ -99,7 +99,7 @@
     },
         {
         "UpdateLevel": "Hanasaki Subcore Update",
-        "TimeStamp": "2026/01/01 19:30",
+        "TimeStamp": "2026/01/01 22:30",
         "Type":"Hanasaki",
         "special":"None",
         "Version": "0.1.1",
@@ -113,7 +113,7 @@
     },
             {
         "UpdateLevel": "Website Update(Critical)",
-        "TimeStamp": "2026/01/01 20:00",
+        "TimeStamp": "2026/01/01 22:30",
         "Type":"Website",
         "special":"None",
         "Version": "0.3.0 Prelease",

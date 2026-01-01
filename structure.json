@@ -1,0 +1,322 @@
+{
+  "title": "Hanasaki帮助手册",
+  "description": "",
+  "cover_page": {
+    "id": "cover",
+    "title": "Help Document",
+    "type": "page",
+    "content": [
+      {
+        "id": "welcome_heading",
+        "type": "heading",
+        "text": "欢迎来到Hanasaki帮助手册",
+        "level": 1,
+        "color": "#b2c9ff",
+        "align": "center",
+        "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+        "font_size": "2rem",
+        "bold": true,
+        "underline": false,
+        "strike": false
+      },
+      {
+        "id": "welcome_text",
+        "type": "paragraph",
+        "text": "此页面用于记录Hanasaki的各种指令化功能\n左侧为手册目录，找到需要查询的部分进入查看即可",
+        "color": "#4a5568",
+        "background": "#ffffff",
+        "align": "center",
+        "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+        "font_size": "1rem",
+        "bold": false,
+        "underline": false,
+        "strike": false
+      }
+    ]
+  },
+  "pages": [
+    {
+      "id": "page_462b8b8d",
+      "title": "天气查询功能",
+      "type": "page",
+      "content": [
+        {
+          "id": "816b4276",
+          "type": "paragraph",
+          "created_at": "2026-01-01T21:02:56.202767",
+          "version": "1.0",
+          "text": "## 使用方法:\n命令列表：\n```\n/weather  [city]  #查询指定城市的实时天气信息\n/weather [city] [date]  #查询指定城市某日的天气预报\n```\n示例见后附图片\n\n\n注⚠️:\n* city值填写顺序为“国家、省份、城市、区县”，一般情况下只输入某某市或某某区即可，遇到重名城市加上某某省即可\n* 日期<date>的格式为YYYY-MM-DD,例如2025-11-22\n* 支持查看最多三日后的天气信息，例如在2025-11-22，最多可以查询到2025-11-25日的天气预报\n* 字段city仅支持中文名",
+          "color": "#007acc",
+          "background": "#ffffff",
+          "align": "left",
+          "font_size": "1rem",
+          "line_height": "1.7",
+          "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+          "bold": false,
+          "underline": false,
+          "strike": false
+        },
+        {
+          "id": "c04a7f05",
+          "type": "image",
+          "created_at": "2026-01-01T21:10:58.870151",
+          "version": "1.0",
+          "src": "WeatherExample.png",
+          "alt": "示例",
+          "caption": "WeatherExample.png",
+          "width": "100%",
+          "align": "center"
+        }
+      ],
+      "created_at": "2026-01-01T21:02:17.994673",
+      "order": 1
+    },
+    {
+      "id": "page_96e8834b",
+      "title": "群投票禁言",
+      "type": "page",
+      "content": [
+        {
+          "id": "bb3d4655",
+          "type": "paragraph",
+          "created_at": "2026-01-01T21:15:37.228474",
+          "version": "1.0",
+          "text": "本功能需要Hanasaki在群聊中拥有管理员或更高权限\n\n ✍️ 使用方法\n\n 1. 发起投票禁言\n\n在群聊中发送以下命令来发起一个投票，用于禁言某个群成员：\n/投票禁言 @目标QQ号 [时长]`\n@目标QQ号`**: 必须，指定要禁言的用户 QQ 号。\n[时长]: 可选，禁言的分钟数，不填则默认为 1 分钟。\n\n**示例:**\n\n  /投票禁言 @12345678 (默认禁言 1 分钟)\n  /投票禁言 @12345678 5 (禁言 5 分钟)\n\n 2. 参与投票\n\n当投票发起后，群成员可以通过在投票消息上添加以下表情来表示自己的意见：\n\n  * **按钮**: 同意禁言\n  * **❓**: 反对禁言\n\n 3. 结果公布\n\n投票时间（默认 60 秒）结束后，插件会自动统计 按钮 和 ❓ 的票数。\n\n  * 如果 按钮 票数多于 ❓，则投票通过，目标用户将被禁言。\n  * 如果 按钮 票数不大于 ❓，则投票不通过，目标用户不受影响。\n\n 4. 获取帮助\n\n /vote help\n发送此命令可以查看投票禁言功能的详细使用说明。",
+          "color": "#007acc",
+          "background": "#ffffff",
+          "align": "left",
+          "font_size": "1rem",
+          "line_height": "1.7",
+          "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+          "bold": false,
+          "underline": false,
+          "strike": false
+        }
+      ],
+      "created_at": "2026-01-01T21:13:52.488342",
+      "order": 2
+    },
+    {
+      "id": "page_fa73ff76",
+      "title": "骰子功能",
+      "type": "page",
+      "content": [
+        {
+          "id": "270d57cb",
+          "type": "note",
+          "created_at": "2026-01-01T21:20:04.896486",
+          "version": "1.0",
+          "text": "我的天哪，这一个小的要命的功能居然需要我单独拉出来一个页面进行介绍",
+          "author": "卡秋KArabella",
+          "color": "#007acc",
+          "background": "#f8f9fa",
+          "show_quotes": true,
+          "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+          "font_size": "1rem",
+          "bold": false,
+          "underline": false
+        },
+        {
+          "id": "e63d76af",
+          "type": "paragraph",
+          "created_at": "2026-01-01T21:21:17.332345",
+          "version": "1.0",
+          "text": "🎲 **骰子命令帮助**\n\n**检定掷骰:**\n`/dice check <检定ID>` - 执行指定检定的掷骰\n\n**普通掷骰:**\n`/dice D<面数> [数量]` - 掷指定面数的骰子\n示例: \n`/dice D20` - 掷一个20面骰\n`/dice D6 3` - 掷三个6面骰并计算总和\n\n**支持的骰子:**\n- D4, D6, D8, D10, D12, D20, D100\n- 面数范围: 2-1000\n- 数量范围: 1-10\n\n**注意:** 检定掷骰需要先使用 `/check` 命令创建检定",
+          "color": "#007acc",
+          "background": "#ffffff",
+          "align": "left",
+          "font_size": "1rem",
+          "line_height": "1.7",
+          "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+          "bold": false,
+          "underline": false,
+          "strike": false
+        }
+      ],
+      "created_at": "2026-01-01T21:19:46.926506",
+      "order": 3
+    },
+    {
+      "id": "page_535dba09",
+      "title": "智能提醒功能",
+      "type": "page",
+      "content": [
+        {
+          "id": "f4358f36",
+          "type": "paragraph",
+          "created_at": "2026-01-01T21:22:37.159311",
+          "version": "1.0",
+          "text": "在私聊或群聊中对 Bot 发送包含关键词的消息。\n\n触发关键词：`提醒`、`叫我`、`记得`、`别忘了`\n\n### 示例\n\n相对时间：\n\"10分钟后**提醒**我关火\"\n绝对时间：\n\"明天早上8点**叫我**起床\"\n模糊时间（依赖当前语境）：\n**别忘了**晚上10点提醒我抢票\"\n\n*注意：如果未指定具体时间，Hanasaki 会提示你补充时间信息。*\n\n群聊提醒示例\n\n当提醒在群聊中触发时，Hanasaki会自动@设置提醒的用户：\n",
+          "color": "#007acc",
+          "background": "#ffffff",
+          "align": "left",
+          "font_size": "1rem",
+          "line_height": "1.7",
+          "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+          "bold": false,
+          "underline": false,
+          "strike": false
+        },
+        {
+          "id": "437a960e",
+          "type": "image",
+          "created_at": "2026-01-01T21:26:19.704299",
+          "version": "1.0",
+          "src": "ReminderExample.png",
+          "alt": "图片",
+          "caption": "ReminderExample.png",
+          "width": "100%",
+          "align": "center"
+        }
+      ],
+      "created_at": "2026-01-01T21:22:17.620971",
+      "order": 4
+    },
+    {
+      "id": "page_9ca6e491",
+      "title": "海龟汤游戏功能",
+      "type": "page",
+      "content": [
+        {
+          "id": "05a2453c",
+          "type": "paragraph",
+          "created_at": "2026-01-01T21:28:57.274789",
+          "version": "1.0",
+          "text": " 基本命令\n\n命令说明\n\n/hgt 问题 | 生成一个新的AI海龟汤题目，开始游戏。 |\n/hgt 问题 [你的问题] | 向AI提问关于当前题目的问题。 |\n/hgt 提示 | 获取一个关于当前题目的提示（最多3次）。 |\n/hgt 整理线索 | 获取当前题目的关键线索整理。 |\n/hgt 猜谜 [你的答案] | 尝试猜测当前题目的汤底（答案）。 |\n/hgt 揭秘 | 直接揭晓当前题目的汤底，并结束游戏。 |\n/hgt 退出 | 退出当前正在进行的游戏\n/hgt 帮助 | 查看所有可用的命令帮助信息\n/hgt 汤面 | 重新查看当前游戏的题目（汤面）\n\n游戏流程示例\n\n1.  发送 `/hgt 问题` 生成一个由AI创造的海龟汤题目并开始游戏。\n2.  使用 `/hgt 问题 为什么...?` 进行提问，获取推理线索。\n3.  使用 `/hgt 提示` 获取提示（最多3次）。\n4.  使用 `/hgt 整理线索` 整理已有信息。\n5.  使用 `/hgt 猜谜 [你的答案]` 尝试猜测汤底。\n6.  猜对或使用 `/hgt 揭秘` 后，游戏结束。",
+          "color": "#007acc",
+          "background": "#ffffff",
+          "align": "left",
+          "font_size": "1rem",
+          "line_height": "1.7",
+          "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+          "bold": false,
+          "underline": false,
+          "strike": false
+        }
+      ],
+      "created_at": "2026-01-01T21:28:22.227972",
+      "order": 5
+    },
+    {
+      "id": "page_20a9c59d",
+      "title": "网易云音乐点歌功能",
+      "type": "page",
+      "content": [
+        {
+          "id": "2b73f1b1",
+          "type": "paragraph",
+          "created_at": "2026-01-01T21:35:43.369043",
+          "version": "1.0",
+          "text": "基本使用\n1. 搜索音乐（返回列表）\n/music [MusicName]\n\n2. 选择歌曲播放\n/choose 1",
+          "color": "#007acc",
+          "background": "#ffffff",
+          "align": "left",
+          "font_size": "1rem",
+          "line_height": "1.7",
+          "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+          "bold": false,
+          "underline": false,
+          "strike": false
+        },
+        {
+          "id": "b8e6c7ce",
+          "type": "image",
+          "created_at": "2026-01-01T21:35:35.421396",
+          "version": "1.0",
+          "src": "MusicExample.png",
+          "alt": "图片",
+          "caption": "MusicExample.png",
+          "width": "100%",
+          "align": "center"
+        }
+      ],
+      "created_at": "2026-01-01T21:33:13.714860",
+      "order": 6
+    },
+    {
+      "id": "page_0fdae13d",
+      "title": "塔罗牌占卜功能",
+      "type": "page",
+      "content": [
+        {
+          "id": "01be241a",
+          "type": "paragraph",
+          "created_at": "2026-01-01T21:46:54.098073",
+          "version": "1.0",
+          "text": "自然语言描述你想抽塔罗牌即可，示例见图\n\n使用时需指定抽牌方式和抽牌范围，目前已默认支持的有\n牌阵：\"单张\", \"圣三角\", \"时间之流\",\"四要素\",\"五牌阵\",\"吉普赛十字\",\"马蹄\",\"六芒星\"\n如果没有明确指定，默认抽\"单张\"。\n范围：\"全部\", \"大阿卡纳\", \"小阿卡纳\"\n如果没有明确指定，默认抽\"全部\"。",
+          "color": "#007acc",
+          "background": "#ffffff",
+          "align": "left",
+          "font_size": "1rem",
+          "line_height": "1.7",
+          "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+          "bold": false,
+          "underline": false,
+          "strike": false
+        },
+        {
+          "id": "2a3ea137",
+          "type": "image",
+          "created_at": "2026-01-01T21:48:14.413981",
+          "version": "1.0",
+          "src": "TarotExample.png",
+          "alt": "图片",
+          "caption": "TarotExample.png",
+          "width": "100%",
+          "align": "center"
+        }
+      ],
+      "created_at": "2026-01-01T21:46:22.470513",
+      "order": 7
+    },
+    {
+      "id": "page_d890f00c",
+      "title": "群组静音功能",
+      "type": "page",
+      "content": [
+        {
+          "id": "93f04966",
+          "type": "paragraph",
+          "created_at": "2026-01-01T21:53:51.736446",
+          "version": "1.0",
+          "text": "这个插件为群组管理员提供了一个强大的工具来让Hanasaki“静音”。当群聊需要专注讨论或减少Hanasaki干扰时，管理员可以一键“静音”Hanasaki。在静音模式下，Hanasaki将忽略所有非管理员的消息，直到被管理员唤醒或到达静音时间自动解除静音。\n\n使用方法：\n以管理员身份（并非群聊管理员，权限下放请在网站主页通过邮箱申请）\n发送\"Mute True\"或者\"小秋你先一边去\"启用静音（20分钟）\n发送\"Mute False\"或者\"小秋你回来吧\"立刻唤醒Hanasaki\n管理员身份@Hanasaki也可立刻唤醒\n示例见图",
+          "color": "#007acc",
+          "background": "#ffffff",
+          "align": "left",
+          "font_size": "1rem",
+          "line_height": "1.7",
+          "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+          "bold": false,
+          "underline": false,
+          "strike": false
+        },
+        {
+          "id": "dc9641e9",
+          "type": "image",
+          "created_at": "2026-01-01T21:59:20.294063",
+          "version": "1.0",
+          "src": "MuteExample.png",
+          "alt": "图片",
+          "caption": "MuteExample.png",
+          "width": "100%",
+          "align": "center"
+        }
+      ],
+      "created_at": "2026-01-01T21:53:34.623931",
+      "order": 8
+    }
+  ],
+  "config": {
+    "theme": "light",
+    "animations": true,
+    "sidebar_collapsible": true,
+    "show_back_to_top": true,
+    "enable_comments": false,
+    "show_word_count": true,
+    "auto_save": true,
+    "font_family": "Inter, 'Microsoft YaHei', sans-serif",
+    "primary_color": "#667eea",
+    "secondary_color": "#764ba2"
+  },
+  "version": "1.0"
+}
