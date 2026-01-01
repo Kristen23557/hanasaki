@@ -60,7 +60,7 @@
         "TimeStamp": "2025/12/25",
         "Type":"Hanasaki",
         "special": "Lockdown",
-        "Version": "0.1.0 Lockdown",
+        "Version": "0.1.0 Lockdown 1",
         "Log": [
             {
                 "Title": "项目0.1.0版本 停机维护",
@@ -80,6 +80,20 @@
                 "Title": "关键问题修复与功能完善",
                 "Content": "完整的修复了所有功能,准备进行发行,进入0.2.0版本开发阶段.",
                 "Whisper": "进度好快,真是太快了,我的天"
+            }
+        ]
+    },
+    {
+        "UpdateLevel": "Normal Lockdown",
+        "TimeStamp": "2026/01/01",
+        "Type":"Hanasaki",
+        "special":"Lockdown",
+        "Version": "0.1.0 Lockdown 2",
+        "Log": [
+            {
+                "Title": "项目0.1.0版本 停机维护",
+                "Content": "花咲一秋项目停机维护,这是必要的,预计时常10分钟之内恢复正常运作.",
+                "Whisper": "什么，居然有人天天玩注入?!"
             }
         ]
     }
