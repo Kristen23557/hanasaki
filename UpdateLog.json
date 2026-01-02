@@ -124,5 +124,19 @@
                 "Whisper": "你看这个懒货做了多久才把帮助手册做出来"
             }
         ]
+    },
+    {
+        "UpdateLevel": "Hanasaki Subcore Update(Minor)",
+        "TimeStamp": "2026/01/03 04:30",
+        "Type":"Hanasaki",
+        "special":"None",
+        "Version": "0.1.2",
+        "Log": [
+            {
+                "Title": "项目0.1.2版本 Subcore更新",
+                "Content": "新增了超超超~级绘图功能,详情请见帮助文档~",
+                "Whisper": "现在是一名德才兼备的女子~~"
+            }
+        ]
     }
 ]
