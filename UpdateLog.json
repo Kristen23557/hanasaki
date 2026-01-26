@@ -138,5 +138,33 @@
                 "Whisper": "现在是一名德才兼备的女子~~"
             }
         ]
+    },
+    {
+        "UpdateLevel": "Hanasaki Subcore Update(Locakdown)",
+        "TimeStamp": "2026/01/25 14:00",
+        "Type":"Hanasaki",
+        "special":"Locakdown",
+        "Version": "0.1.5 Locakdown",
+        "Log": [
+            {
+                "Title": "项目0.1.5版本 Subcore更新前维护",
+                "Content": "预计用时不会很久",
+                "Whisper": "很快就回来!"
+            }
+        ]
+    },
+        {
+        "UpdateLevel": "Hanasaki Subcore Update(Critical)",
+        "TimeStamp": "2026/01/25 15:30",
+        "Type":"Hanasaki",
+        "special":"None",
+        "Version": "0.1.5",
+        "Log": [
+            {
+                "Title": "项目0.1.5版本 Subcore更新",
+                "Content": "日期感知能力改进，更好的感知日期和节日；永久记忆已上线，基于lpmm知识库；新增好感度评分系统，用于评判用户互动质量；优化对话生成模型，提高响应速度和准确性。",
+                "Whisper": "galgame里就是这样的~~~！"
+            }
+        ]
     }
 ]
